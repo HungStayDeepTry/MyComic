@@ -69,4 +69,16 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(libs.androidx.hilt.navigation.compose.v120)
+
+    // Retrofit + Gson
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+
+// Security keystore
+    implementation(libs.androidx.security.crypto)
+    implementation(libs.androidx.datastore)
+    implementation(libs.androidx.datastore.preferences)
+
+// Coroutine
+    implementation(libs.kotlinx.coroutines.android)
 }
