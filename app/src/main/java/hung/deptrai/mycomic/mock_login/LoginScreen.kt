@@ -17,7 +17,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -36,43 +38,43 @@ fun LoginScreen(context: Context) {
         scope.launch {
             isLoading = true
             try {
-                // Xây dựng yêu cầu đăng nhập với FormBody
-                val formBody = FormBody.Builder()
-                    .add("username", username)
-                    .add("password", password)
-                    .build()
+                val responseBody = withContext(Dispatchers.IO) {
+                    val formBody = FormBody.Builder()
+                        .add("username", username)
+                        .add("password", password)
+                        .add("grant_type", "password") // Thêm các tham số cần thiết khác
+                        .add("client_id", "personal-client-0c63771e-b730-4478-95bd-5f466128d73e-4f110401") // Ví dụ client_id nếu có
+                        .add("client_secret", "YZUGV0KFRqbp9C3WBxdIcMPs5NvbcJh1") // Ví dụ client_secret nếu có
+                        .build()
 
-                val request = Request.Builder()
-                    .url("https://api.mangadex.org/auth/login")
-                    .post(formBody)
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .build()
+                    val request = Request.Builder()
+                        .url("https://auth.mangadex.org/realms/mangadex/protocol/openid-connect/token")
+                        .post(formBody) // Sử dụng phương thức POST với body dạng FormBody
+                        .header("Content-Type", "application/x-www-form-urlencoded") // Đặt header đúng kiểu
+                        .build()
 
-                val client = OkHttpClient()
-                val response: Response = client.newCall(request).execute()
 
-                if (response.isSuccessful) {
-                    // Lấy chuỗi phản hồi từ body
-                    val responseBody = response.body()?.string()
+                    val client = OkHttpClient()
+                    val response: Response = client.newCall(request).execute()
 
-                    if (!responseBody.isNullOrEmpty()) {
-                        Log.d("Login", "Đăng nhập thành công: $responseBody")
-
-                        // Giả sử JSON trả về chứa accessToken
-                        val token = parseAccessToken(responseBody)
-                        token?.let {
-                            context.saveAccessToken(it)  // Lưu access token
-                            snackbarHostState.showSnackbar("Đăng nhập thành công")
-                            Toast.makeText(context, "Access Token: $it", Toast.LENGTH_LONG).show()
-                        }
+                    if (response.isSuccessful) {
+                        response.body?.string()
                     } else {
-                        snackbarHostState.showSnackbar("Dữ liệu trả về không hợp lệ")
+                        throw Exception("Đăng nhập thất bại: ${response.body?.string()}")
+                    }
+                }
+
+                if (!responseBody.isNullOrEmpty()) {
+                    Log.d("Login", "Đăng nhập thành công: $responseBody")
+
+                    val token = parseAccessToken(responseBody)
+                    token?.let {
+                        context.saveAccessToken(it)
+                        snackbarHostState.showSnackbar("Đăng nhập thành công")
+                        Toast.makeText(context, "Access Token: $it", Toast.LENGTH_LONG).show()
                     }
                 } else {
-                    // Nếu đăng nhập thất bại
-                    val errorBody = response.body()?.string()
-                    snackbarHostState.showSnackbar("Đăng nhập thất bại: $errorBody")
-                    Log.e("Login", "Đăng nhập thất bại: $errorBody")
+                    snackbarHostState.showSnackbar("Dữ liệu trả về không hợp lệ")
                 }
             } catch (e: Exception) {
                 snackbarHostState.showSnackbar("Lỗi: ${e.message}")
@@ -82,6 +84,7 @@ fun LoginScreen(context: Context) {
             }
         }
     }
+
 
     // UI hiển thị trạng thái loading và Snackbar
     Box(modifier = Modifier.fillMaxSize()) {
