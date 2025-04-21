@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import hung.deptrai.mycomic.mock_login.LoginScreen
+import hung.deptrai.mycomic.feature.mock_login.LoginScreen
 import hung.deptrai.mycomic.ui.theme.MyComicTheme
 
 class MainActivity : ComponentActivity() {

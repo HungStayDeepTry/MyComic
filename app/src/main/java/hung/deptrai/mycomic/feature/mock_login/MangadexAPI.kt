@@ -1,4 +1,4 @@
-package hung.deptrai.mycomic.mock_login
+package hung.deptrai.mycomic.feature.mock_login
 
 import okhttp3.OkHttpClient
 import retrofit2.Response
