@@ -11,7 +11,7 @@ import javax.inject.Inject
 class LoginNavigationImpl @Inject constructor() : FeatureNavigation {
     override fun register(navGraphBuilder: NavGraphBuilder, navController: NavController) {
         navGraphBuilder.composable("login"){
-            LoginScreen(LocalContext.current)
+            LoginScreen(LocalContext.current, navController)
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,6 +18,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,14 +28,18 @@ import okhttp3.Request
 import okhttp3.Response
 
 @Composable
-fun LoginScreen(context: Context) {
+fun LoginScreen(context: Context ,navController: NavController) {
     val username = "hungStayDeepTry"
     val password = "chuduchung2406"
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     var isLoading by remember { mutableStateOf(false) }
-
+    Box(
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Login Screen")
+    }
     LaunchedEffect(Unit) {
         scope.launch {
             isLoading = true
@@ -72,6 +78,7 @@ fun LoginScreen(context: Context) {
                         context.saveAccessToken(it)
                         snackbarHostState.showSnackbar("Đăng nhập thành công")
                         Toast.makeText(context, "Access Token: $it", Toast.LENGTH_LONG).show()
+                        navController.navigate("search")
                     }
                 } else {
                     snackbarHostState.showSnackbar("Dữ liệu trả về không hợp lệ")
