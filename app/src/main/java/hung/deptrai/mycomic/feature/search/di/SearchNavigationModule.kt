@@ -1,4 +1,4 @@
-package hung.deptrai.mycomic.feature.mock_login.di
+package hung.deptrai.mycomic.feature.search.di
 
 import dagger.Binds
 import dagger.Module
@@ -10,10 +10,10 @@ import hung.deptrai.mycomic.feature.mock_login.navigation.LoginNavigationImpl
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class LoginNavigationModule {
+abstract class SearchNavigationModule {
     @Binds
     @IntoSet
-    abstract fun bindLoginNavigation(
-        impl: LoginNavigationImpl
+    abstract fun bindSearchNavigation(
+        impl: SearchNavigationModule
     ): FeatureNavigation
 }
