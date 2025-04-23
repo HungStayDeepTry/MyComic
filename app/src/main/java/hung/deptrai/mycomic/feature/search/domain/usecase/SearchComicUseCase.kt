@@ -1,5 +1,6 @@
 package hung.deptrai.mycomic.feature.search.domain.usecase
 
+import hung.deptrai.mycomic.core.domain.model.MangaEntity
 import hung.deptrai.mycomic.feature.search.data.remote.dto.MangaDTO
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchComicRepository
 import hung.deptrai.mycomic.feature.search.presentation.SearchComic
@@ -8,19 +9,22 @@ import javax.inject.Inject
 class SearchComicUseCase @Inject constructor(
     private val searchComicRepository: SearchComicRepository
 ) {
-    private fun mapToSearchComicModel(mangaDTO: MangaDTO): List<SearchComic> {
-        return mangaDTO.data.map { data ->
-            val title = data.attributes.title.en ?: "No title"
-            val description = data.attributes.description.en ?: "No description"
-            val imageUrl = data.attributes.links.raw ?: ""  // Bạn có thể chọn trường ảnh từ response nếu có
-            val status = data.attributes.status
+    private fun mapToSearchComicModel(mangaEntities: List<MangaEntity>): List<SearchComic> {
+        return mangaEntities.map { entity ->
+            val title = entity.title.en ?: "No title"
+            val description = entity.description?.en ?: "No description"
+
+            val imageUrl = entity.coverArt?.attributes?.fileName?.let { fileName ->
+                // Dựa theo format ảnh của MangaDex
+                "https://uploads.mangadex.org/covers/${entity.id}/$fileName.256.jpg"
+            } ?: ""
 
             SearchComic(
-                id = data.id,
+                id = entity.id,
                 title = title,
                 description = description,
                 imageUrl = imageUrl,
-                status = status
+                status = entity.status ?: ""
             )
         }
     }
@@ -29,6 +33,6 @@ class SearchComicUseCase @Inject constructor(
         // Lấy dữ liệu từ repository
         val mangaDTO = searchComicRepository.searchComicByTitle(title)
         // Chuyển đổi từ MangaDTO sang SearchComicModel
-        return mangaDTO?.let { mapToSearchComicModel(it) } ?: emptyList()
+        return mapToSearchComicModel(mangaDTO) ?: emptyList()
     }
 }
