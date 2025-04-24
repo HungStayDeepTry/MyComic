@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 
 @Composable
 fun SearchScreen(viewModel: SearchViewModel) {
@@ -85,9 +86,59 @@ fun SearchResultList(searchResults: List<SearchComic>) {
 fun SearchResultItem(comic: SearchComic) {
     Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // Hiển thị ảnh bìa
+            if (comic.imageUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = comic.imageUrl,
+                    contentDescription = "Cover Image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(bottom = 8.dp)
+                )
+            }
+
+            // Tiêu đề
             Text(text = comic.title, style = MaterialTheme.typography.titleLarge)
+
+            // Mô tả
             Text(text = comic.description, style = MaterialTheme.typography.bodyMedium)
+
+            // Trạng thái
             Text(text = "Status: ${comic.status}", style = MaterialTheme.typography.bodySmall)
+
+            // Tác giả
+            if (comic.authors?.isNotEmpty() == true) {
+                Text(
+                    text = "Authors: ${comic.authors.joinToString(", ")}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            // Điểm đánh giá
+            comic.averageRating?.let {
+                Text(text = "Average Rating: $it", style = MaterialTheme.typography.bodySmall)
+            }
+
+            // Số lượt theo dõi
+            comic.follows?.let {
+                Text(text = "Follows: $it", style = MaterialTheme.typography.bodySmall)
+            }
+
+            // Số chương
+            comic.chapters?.let {
+                Text(text = "Chapters: $it", style = MaterialTheme.typography.bodySmall)
+            }
+
+            // Các điểm đánh giá khác
+            comic.bayesianRating?.let {
+                Text(text = "Bayesian Rating: $it", style = MaterialTheme.typography.bodySmall)
+            }
+
+            comic.commentsCount?.let {
+                Text(text = "Comments: $it", style = MaterialTheme.typography.bodySmall)
+            }
         }
     }
 }
+

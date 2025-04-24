@@ -3,6 +3,7 @@ package hung.deptrai.mycomic.feature.search.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.feature.search.domain.usecase.SearchComicUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,13 +20,17 @@ class SearchViewModel @Inject constructor(
     fun searchComic(title: String) {
         viewModelScope.launch {
             _searchState.value = Result.Loading
+
             try {
                 val result = searchComicUseCase.searchComicByTitle(title)
-                if (result.isNotEmpty()) {
-                    _searchState.value = Result.Success(result)
+                val manga = (result as? List<SearchComic>) ?: emptyList()
+
+                if (manga.isNotEmpty()) {
+                    _searchState.value = Result.Success(manga)
                 } else {
-                    _searchState.value = Result.Error(Exception("No data found"))
+                    _searchState.value = Result.Error(Exception("Không tìm thấy truyện nào"))
                 }
+
             } catch (e: Exception) {
                 _searchState.value = Result.Error(e)
             }

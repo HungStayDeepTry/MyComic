@@ -5,6 +5,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import hung.deptrai.mycomic.core.network.author.SearchAuthorAPI
 import hung.deptrai.mycomic.core.network.coverArt.CoverArtAPI
+import hung.deptrai.mycomic.core.network.statistic.SearchStatisticsAPI
 import hung.deptrai.mycomic.feature.search.data.remote.SearchComicAPI
 import jakarta.inject.Singleton
 import okhttp3.OkHttpClient
@@ -34,5 +35,10 @@ object NetworkModule {
     @Provides
     fun provideSearchAuthorAPI(retrofit: Retrofit): SearchAuthorAPI{
         return retrofit.create(SearchAuthorAPI::class.java)
+    }
+
+    @Provides
+    fun provideStatisticsSearchAPI(retrofit: Retrofit): SearchStatisticsAPI{
+        return retrofit.create(SearchStatisticsAPI::class.java)
     }
 }

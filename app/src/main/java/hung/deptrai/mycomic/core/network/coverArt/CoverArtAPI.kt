@@ -1,11 +1,16 @@
 package hung.deptrai.mycomic.core.network.coverArt
 
 import hung.deptrai.mycomic.feature.search.data.remote.dto.coverArt.CoverArtDTO
+import hung.deptrai.mycomic.feature.search.data.remote.dto.coverArt.CoverArtResponse
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface CoverArtAPI {
-    @GET("cover/{id}")
-    suspend fun getCoverArtById(@Path("id") id: String): Response<CoverArtDTO>
+    @GET("cover")
+    suspend fun getCoverArtById(
+        @Query("ids[]") ids: List<String>
+    ): Response<CoverArtResponse>
 }

@@ -82,4 +82,5 @@ dependencies {
 // Coroutine
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.okhttp)
+    implementation(libs.coil.compose)
 }

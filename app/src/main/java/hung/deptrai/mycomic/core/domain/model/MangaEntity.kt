@@ -30,5 +30,9 @@ data class MangaEntity(
     val year: Int?,
     val externalLinks: Links,                     // Dùng luôn Links DTO
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val follows: Int? = null,
+    val averageRating: Double? = null,
+    val bayesianRating: Double? = null,
+    val commentsCount: Int? = null,
 )

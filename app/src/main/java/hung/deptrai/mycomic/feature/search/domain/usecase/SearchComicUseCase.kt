@@ -1,5 +1,6 @@
 package hung.deptrai.mycomic.feature.search.domain.usecase
 
+import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.domain.model.MangaEntity
 import hung.deptrai.mycomic.feature.search.data.remote.dto.MangaDTO
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchComicRepository
@@ -9,8 +10,8 @@ import javax.inject.Inject
 class SearchComicUseCase @Inject constructor(
     private val searchComicRepository: SearchComicRepository
 ) {
-    private fun mapToSearchComicModel(mangaEntities: List<MangaEntity>): List<SearchComic> {
-        return mangaEntities.map { entity ->
+    private fun mapToSearchComicModel(mangaEntities: List<MangaEntity>): List<SearchComic>? {
+        val searchComics = mangaEntities.map { entity ->
             val title = entity.title.en ?: "No title"
             val description = entity.description?.en ?: "No description"
 
@@ -24,15 +25,44 @@ class SearchComicUseCase @Inject constructor(
                 title = title,
                 description = description,
                 imageUrl = imageUrl,
-                status = entity.status ?: ""
+                status = entity.status ?: "",
+                authors = entity.authors.map { it.attributes.name ?: "" },
+                coverArtUrl = imageUrl,
+                rating = entity.averageRating,
+                views = entity.follows,
+                chapters = entity.lastChapter?.toIntOrNull(),
+                follows = entity.follows,
+                averageRating = entity.averageRating,
+                bayesianRating = entity.bayesianRating,
+                commentsCount = entity.commentsCount
             )
         }
+        // Trả về danh sách dưới dạng một biến duy nhất
+        return searchComics
     }
 
-    suspend fun searchComicByTitle(title: String): List<SearchComic> {
+    suspend fun searchComicByTitle(title: String): Any {
         // Lấy dữ liệu từ repository
-        val mangaDTO = searchComicRepository.searchComicByTitle(title)
-        // Chuyển đổi từ MangaDTO sang SearchComicModel
-        return mapToSearchComicModel(mangaDTO) ?: emptyList()
+        return when (val resultWrapper = searchComicRepository.searchComicByTitle(title)) {
+            is ResultWrapper.Success -> {
+                // Chuyển đổi từ MangaEntity sang SearchComicModel
+                val searchComics = mapToSearchComicModel(resultWrapper.data)
+//                ResultWrapper.Success(searchComics.ifEmpty { emptyList() }) // Đảm bảo trả về danh sách không phải null
+                ResultWrapper.Success(searchComics)
+            }
+            is ResultWrapper.GenericError -> {
+                // Trả về lỗi chi tiết cho UI
+                ResultWrapper.GenericError(
+                    code = resultWrapper.code,
+                    error = "Error: ${resultWrapper.error}"
+                )
+            }
+            is ResultWrapper.NetworkError -> {
+                // Lỗi mạng, có thể cung cấp thêm thông báo lỗi chi tiết
+                ResultWrapper.NetworkError(
+                    exception = resultWrapper.exception
+                )
+            }
+        }
     }
 }
