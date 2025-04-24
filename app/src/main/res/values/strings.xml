@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">MyComic</string>
+    <string name="rating">Rating</string>
+    <string name="bookmark_count">bookmark count</string>
+    <string name="NA">N/A</string>
+    <string name="comment_count">comment count</string>
+    <string name="status_comic">status</string>
 </resources>

@@ -23,9 +23,10 @@ class SearchViewModel @Inject constructor(
 
             try {
                 val result = searchComicUseCase.searchComicByTitle(title)
-                val manga = (result as? List<SearchComic>) ?: emptyList()
+                val manga = (result as? ResultWrapper.Success<*>)?.data
+                val rs2 = manga as? List<SearchComic>
 
-                if (manga.isNotEmpty()) {
+                if (rs2?.isNotEmpty() == true) {
                     _searchState.value = Result.Success(manga)
                 } else {
                     _searchState.value = Result.Error(Exception("Không tìm thấy truyện nào"))

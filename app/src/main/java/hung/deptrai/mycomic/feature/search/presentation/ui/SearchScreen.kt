@@ -1,4 +1,4 @@
-package hung.deptrai.mycomic.feature.search.presentation
+package hung.deptrai.mycomic.feature.search.presentation.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,8 +23,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import hung.deptrai.mycomic.feature.search.presentation.Result
+import hung.deptrai.mycomic.feature.search.presentation.SearchComic
+import hung.deptrai.mycomic.feature.search.presentation.SearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.ui.component.MangaSearchResultItem
 
 @Composable
 fun SearchScreen(viewModel: SearchViewModel) {
@@ -34,7 +40,9 @@ fun SearchScreen(viewModel: SearchViewModel) {
     var query by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
         // Search bar
@@ -77,14 +85,16 @@ fun SearchScreen(viewModel: SearchViewModel) {
 fun SearchResultList(searchResults: List<SearchComic>) {
     LazyColumn {
         items(searchResults) { comic ->
-            SearchResultItem(comic)
+            MangaSearchResultItem(comic) { }
         }
     }
 }
 
 @Composable
 fun SearchResultItem(comic: SearchComic) {
-    Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+    Card(modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Hiển thị ảnh bìa
             if (comic.imageUrl.isNotEmpty()) {
@@ -140,5 +150,11 @@ fun SearchResultItem(comic: SearchComic) {
             }
         }
     }
+}
+
+@Preview
+@Composable
+private fun Prev1() {
+    SearchScreen(viewModel = hiltViewModel<SearchViewModel>())
 }
 
