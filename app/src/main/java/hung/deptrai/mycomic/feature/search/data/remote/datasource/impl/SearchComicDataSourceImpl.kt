@@ -1,26 +1,24 @@
-package hung.deptrai.mycomic.feature.search.data.remote.datasource
+package hung.deptrai.mycomic.feature.search.data.remote.datasource.impl
 
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.common.safeApiCall
-import hung.deptrai.mycomic.core.network.author.SearchAuthorAPI
+import hung.deptrai.mycomic.core.network.author.SearchAuthorByIdAPI
 import hung.deptrai.mycomic.core.network.coverArt.CoverArtAPI
 import hung.deptrai.mycomic.core.network.statistic.SearchStatisticsAPI
 import hung.deptrai.mycomic.feature.search.data.remote.SearchComicAPI
+import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchComicDataSource
 import hung.deptrai.mycomic.feature.search.data.remote.dto.MangaDTO
-import hung.deptrai.mycomic.feature.search.data.remote.dto.author.AuthorDTO
 import hung.deptrai.mycomic.feature.search.data.remote.dto.author.AuthorResponse
-import hung.deptrai.mycomic.feature.search.data.remote.dto.coverArt.CoverArtDTO
 import hung.deptrai.mycomic.feature.search.data.remote.dto.coverArt.CoverArtResponse
-import hung.deptrai.mycomic.feature.search.data.remote.dto.statistic.MangaStatisticDTO
 import hung.deptrai.mycomic.feature.search.data.remote.dto.statistic.StatisticsResponse
 import javax.inject.Inject
 
-class SearchDataSourceImpl @Inject constructor(
+class SearchComicDataSourceImpl @Inject constructor(
     private val api: SearchComicAPI,
-    private val api1: SearchAuthorAPI,
+    private val api1: SearchAuthorByIdAPI,
     private val api2: CoverArtAPI,
     private val api3: SearchStatisticsAPI
-) : SearchDataSource{
+) : SearchComicDataSource {
     override suspend fun getMangaByTitle(title: String): ResultWrapper<MangaDTO?> {
         return safeApiCall { api.getComicByTitle(title) }
     }

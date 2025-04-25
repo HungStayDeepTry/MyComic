@@ -4,8 +4,12 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchDataSource
-import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchDataSourceImpl
+import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchAuthorDataSource
+import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchComicDataSource
+import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchScanlationGroupDataSource
+import hung.deptrai.mycomic.feature.search.data.remote.datasource.impl.SearchAuthorDataSourceImpl
+import hung.deptrai.mycomic.feature.search.data.remote.datasource.impl.SearchComicDataSourceImpl
+import hung.deptrai.mycomic.feature.search.data.remote.datasource.impl.SearchScanlationGroupDataSourceImpl
 import javax.inject.Singleton
 
 @Module
@@ -15,6 +19,18 @@ abstract class DataSourceModule {
     @Binds
     @Singleton
     abstract fun bindSearchDataSource(
-        impl: SearchDataSourceImpl
-    ): SearchDataSource
+        impl: SearchComicDataSourceImpl
+    ): SearchComicDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindSearchAuthorDataSource(
+        impl: SearchAuthorDataSourceImpl
+    ) : SearchAuthorDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindSearchScanlationDataSource(
+        impl: SearchScanlationGroupDataSourceImpl
+    ) : SearchScanlationGroupDataSource
 }

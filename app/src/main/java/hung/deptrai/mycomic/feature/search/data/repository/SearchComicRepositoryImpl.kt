@@ -1,14 +1,14 @@
 package hung.deptrai.mycomic.feature.search.data.repository
 
 import hung.deptrai.mycomic.core.common.ResultWrapper
-import hung.deptrai.mycomic.core.domain.mapper.mapDtoToEntity
+import hung.deptrai.mycomic.core.domain.mapper.mangaDTOtoMangaEntity
 import hung.deptrai.mycomic.core.domain.model.MangaEntity
-import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchDataSource
+import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchComicDataSource
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchComicRepository
 import javax.inject.Inject
 
 class SearchComicRepositoryImpl @Inject constructor(
-    private val searchMangaDataSource: SearchDataSource
+    private val searchMangaDataSource: SearchComicDataSource
 ) : SearchComicRepository {
 
     override suspend fun searchComicByTitle(title: String): ResultWrapper<List<MangaEntity>> {
@@ -51,7 +51,7 @@ class SearchComicRepositoryImpl @Inject constructor(
                         val statistic = statMap[mangaId]
 
                         if (coverArt != null && statistic != null) {
-                            mapDtoToEntity(dto, coverArt, authors, statistic)
+                            mangaDTOtoMangaEntity(dto, coverArt, authors, statistic)
                         } else null
                     }
 

@@ -3,7 +3,7 @@ package hung.deptrai.mycomic.feature.search.data.remote.dto.author
 data class AuthorAttributes(
     val name: String?,
     val imageUrl: String?,
-    val biography: Map<String, Any>?,  // Có thể chứa dữ liệu không xác định, cần điều chỉnh theo mục đích sử dụng
+    val biography: Map<String, String>?,  // Có thể chứa dữ liệu không xác định, cần điều chỉnh theo mục đích sử dụng
     val twitter: String?,
     val pixiv: String?,
     val melonBook: String?,

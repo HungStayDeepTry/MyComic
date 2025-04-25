@@ -1,32 +1,30 @@
 package hung.deptrai.mycomic.feature.search.presentation.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
+import hung.deptrai.mycomic.R
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import hung.deptrai.mycomic.feature.search.presentation.Result
 import hung.deptrai.mycomic.feature.search.presentation.SearchComic
 import hung.deptrai.mycomic.feature.search.presentation.SearchViewModel
@@ -35,123 +33,173 @@ import hung.deptrai.mycomic.feature.search.presentation.ui.component.MangaSearch
 @Composable
 fun SearchScreen(viewModel: SearchViewModel) {
     val searchState by viewModel.searchState.collectAsState()
-
-    // Đầu vào tìm kiếm
     var query by remember { mutableStateOf("") }
+    val selectedTabIndex = remember { mutableStateOf(0) }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Search bar
-        TextField(
-            value = query,
-            onValueChange = { query = it },
-            label = { Text("Search Manga") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Button to trigger search
-        Button(
-            onClick = { viewModel.searchComic(query) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Search")
+        item {
+            SearchBar(query = query, onQueryChange = {
+                query = it
+                viewModel.searchComic(it)
+            })
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        item {
+            SearchTabs(
+                selectedTabIndex = selectedTabIndex.value,
+                onTabSelected = { selectedTabIndex.value = it }
+            )
+        }
 
+        item {
+            TabContent(searchState = searchState, selectedTabIndex.value)
+        }
+    }
+}
+
+@Composable
+fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(38.dp)
+            .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        BasicTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.fillMaxSize(),
+            singleLine = true,
+            textStyle = TextStyle(fontSize = 14.sp, color = Color.Black),
+            decorationBox = { innerTextField ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.search_ic),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    if (query.isEmpty()) {
+                        Text(
+                            text = "Search Manga",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        )
+    }
+}
+@Composable
+fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
+    val offsetAnim = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(selectedTabIndex) {
+        offsetAnim.snapTo(0f)
+        scope.launch {
+            offsetAnim.animateTo(targetValue = -5f, animationSpec = tween(durationMillis = 50))
+            offsetAnim.animateTo(targetValue = 5f, animationSpec = tween(durationMillis = 50))
+            offsetAnim.animateTo(targetValue = 0f, animationSpec = tween(durationMillis = 50))
+        }
+    }
+
+    TabRow(
+        selectedTabIndex = selectedTabIndex,
+        indicator = { tabPositions ->
+            SecondaryIndicator(
+                modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    ) {
+        listOf("All", "Manga", "Author", "Group").forEachIndexed { index, title ->
+            Tab(
+                selected = selectedTabIndex == index,
+                onClick = { onTabSelected(index) },
+                text = { Text(title) },
+                modifier = Modifier.offset(x = if (selectedTabIndex == index) offsetAnim.value.dp else 0.dp)
+            )
+        }
+    }
+}
+@SuppressLint("UnusedContentLambdaTargetStateParameter")
+@Composable
+fun TabContent(searchState: Result<List<SearchComic>>, selectedTabIndex: Int) {
+    AnimatedContent(targetState = searchState, label = "") {
         when (searchState) {
             is Result.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                Column(
+                    Modifier.fillMaxSize()
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
             }
             is Result.Success -> {
-                val searchResults = (searchState as Result.Success).data
-                SearchResultList(searchResults)
+                val searchResults = searchState.data
+                Column(
+                    Modifier.wrapContentSize()
+                ) {
+//                    searchResults.forEach { comic ->
+//                        MangaSearchResultItem(comic) {}
+//                    }
+                    AnimatedContent(targetState = selectedTabIndex, label = "") {
+                        when (selectedTabIndex) {
+                            0 -> {
+                                Column(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+
+                                }
+                                // Add your content for "All" here
+                            }
+                            1 -> {
+                                Column {
+                                    searchResults.forEach { it ->
+                                        MangaSearchResultItem(it) {}
+                                    }
+                                }
+                                // Add your content for "Manga" here
+                            }
+                            2 -> {
+                                Column(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+
+                                }
+                                // Add your content for "Author" here
+                            }
+                            3 -> {
+                                Column(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+
+                                }
+                                // Add your content for "Group" here
+                            }
+                        }
+                    }
+                }
             }
             is Result.Error -> {
-                val errorMessage = (searchState as Result.Error).exception.message ?: "Unknown error"
-                Text(errorMessage, color = MaterialTheme.colorScheme.onError)
+                val errorMessage = searchState.exception.message ?: "Unknown error"
+                Text(text = errorMessage, color = MaterialTheme.colorScheme.onError)
             }
         }
     }
 }
-
-@Composable
-fun SearchResultList(searchResults: List<SearchComic>) {
-    LazyColumn {
-        items(searchResults) { comic ->
-            MangaSearchResultItem(comic) { }
-        }
-    }
-}
-
-@Composable
-fun SearchResultItem(comic: SearchComic) {
-    Card(modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp)) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Hiển thị ảnh bìa
-            if (comic.imageUrl.isNotEmpty()) {
-                AsyncImage(
-                    model = comic.imageUrl,
-                    contentDescription = "Cover Image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(bottom = 8.dp)
-                )
-            }
-
-            // Tiêu đề
-            Text(text = comic.title, style = MaterialTheme.typography.titleLarge)
-
-            // Mô tả
-            Text(text = comic.description, style = MaterialTheme.typography.bodyMedium)
-
-            // Trạng thái
-            Text(text = "Status: ${comic.status}", style = MaterialTheme.typography.bodySmall)
-
-            // Tác giả
-            if (comic.authors?.isNotEmpty() == true) {
-                Text(
-                    text = "Authors: ${comic.authors.joinToString(", ")}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
-            // Điểm đánh giá
-            comic.averageRating?.let {
-                Text(text = "Average Rating: $it", style = MaterialTheme.typography.bodySmall)
-            }
-
-            // Số lượt theo dõi
-            comic.follows?.let {
-                Text(text = "Follows: $it", style = MaterialTheme.typography.bodySmall)
-            }
-
-            // Số chương
-            comic.chapters?.let {
-                Text(text = "Chapters: $it", style = MaterialTheme.typography.bodySmall)
-            }
-
-            // Các điểm đánh giá khác
-            comic.bayesianRating?.let {
-                Text(text = "Bayesian Rating: $it", style = MaterialTheme.typography.bodySmall)
-            }
-
-            comic.commentsCount?.let {
-                Text(text = "Comments: $it", style = MaterialTheme.typography.bodySmall)
-            }
-        }
-    }
-}
-
 @Preview
 @Composable
 private fun Prev1() {

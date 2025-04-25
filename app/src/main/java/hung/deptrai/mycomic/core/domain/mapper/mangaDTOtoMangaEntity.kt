@@ -3,13 +3,11 @@ package hung.deptrai.mycomic.core.domain.mapper
 import android.util.Log
 import hung.deptrai.mycomic.core.domain.model.MangaEntity
 import hung.deptrai.mycomic.feature.search.data.remote.dto.Data
-import hung.deptrai.mycomic.feature.search.data.remote.dto.MangaDTO
 import hung.deptrai.mycomic.feature.search.data.remote.dto.author.AuthorDTO
 import hung.deptrai.mycomic.feature.search.data.remote.dto.coverArt.CoverArtDTO
 import hung.deptrai.mycomic.feature.search.data.remote.dto.statistic.MangaStatisticDTO
-import kotlin.math.log
 
-fun mapDtoToEntity(
+fun mangaDTOtoMangaEntity(
     data: Data,
     coverArtDTO: CoverArtDTO,
     authorDTO: List<AuthorDTO>,
