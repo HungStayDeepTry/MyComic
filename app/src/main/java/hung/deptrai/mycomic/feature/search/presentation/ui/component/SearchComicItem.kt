@@ -26,24 +26,6 @@ import coil.compose.AsyncImage
 import hung.deptrai.mycomic.feature.search.presentation.SearchComic
 import hung.deptrai.mycomic.R
 import hung.deptrai.mycomic.feature.search.presentation.ui.util.getStatusColor
-
-/**
- * Data model representing a summary item for MangaDex search results.
- */
-data class MangaSummary(
-    val id: String,
-    val title: String,
-    val authors: String,
-    val thumbnailUrl: String
-)
-
-/**
- * Composable for displaying a single manga item in search results, mimicking MangaDex mobile web style.
- *
- * @param manga The MangaSummary data containing title, authors, and thumbnail URL.
- * @param modifier Optional Modifier for styling.
- * @param onItemClick Callback when the item is clicked, returning the manga's ID.
- */
 @SuppressLint("DefaultLocale")
 @Composable
 fun MangaSearchResultItem(

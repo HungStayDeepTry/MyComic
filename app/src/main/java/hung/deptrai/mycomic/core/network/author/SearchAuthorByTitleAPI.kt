@@ -10,6 +10,6 @@ interface SearchAuthorByTitleAPI {
     @GET("author")
     suspend fun getAuthorByTitle(
         @Query("name") name: String,
-        @Query("limit") limit: Int = 100
+        @Query("limit") limit: Int = 15
     ): Response<JsonResponse<AuthorDTO>>
 }

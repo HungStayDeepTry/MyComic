@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
@@ -25,14 +24,25 @@ import kotlinx.coroutines.launch
 import hung.deptrai.mycomic.R
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
 import hung.deptrai.mycomic.feature.search.presentation.Result
+import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
 import hung.deptrai.mycomic.feature.search.presentation.SearchComic
-import hung.deptrai.mycomic.feature.search.presentation.SearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.viewmodel.SearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.ui.component.MangaSearchResultItem
+import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ScanlationGroupSearchViewModel
 
 @Composable
-fun SearchScreen(viewModel: SearchViewModel) {
-    val searchState by viewModel.searchState.collectAsState()
+fun SearchScreen(
+    comicViewModel: SearchViewModel<SearchComic>,
+    authorViewModel: SearchViewModel<AuthorSearch>,
+    scanlationGroupSearchViewModel: SearchViewModel<ScanlationGroupSearch>
+) {
+    val comicSearchState by comicViewModel.searchState.collectAsState()
+    val authorSearchState by authorViewModel.searchState.collectAsState()
+//    val pr = LocalViewModelStoreOwner.current
+    val scanlationGroupSearchState by scanlationGroupSearchViewModel.searchState.collectAsState()
     var query by remember { mutableStateOf("") }
     val selectedTabIndex = remember { mutableStateOf(0) }
 
@@ -45,7 +55,22 @@ fun SearchScreen(viewModel: SearchViewModel) {
         item {
             SearchBar(query = query, onQueryChange = {
                 query = it
-                viewModel.searchComic(it)
+//                viewModel.searchComic(it)
+                comicViewModel.search(it)
+                when(selectedTabIndex.value){
+                    0 -> {
+//                        authorViewModel.search(it)
+                    }
+                    1 ->{
+                        comicViewModel.search(it)
+                    }
+                    2 ->{
+                        authorViewModel.search(it)
+                    }
+                    3 ->{
+                        scanlationGroupSearchViewModel.search(it)
+                    }
+                }
             })
         }
 
@@ -57,7 +82,12 @@ fun SearchScreen(viewModel: SearchViewModel) {
         }
 
         item {
-            TabContent(searchState = searchState, selectedTabIndex.value)
+            TabContent(
+                comicSearchState = comicSearchState,
+                authorSearchState = authorSearchState,
+                scanlationGroupSearchState = scanlationGroupSearchState,
+                selectedTabIndex = selectedTabIndex.value
+            )
         }
     }
 }
@@ -137,65 +167,73 @@ fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
 }
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
-fun TabContent(searchState: Result<List<SearchComic>>, selectedTabIndex: Int) {
-    AnimatedContent(targetState = searchState, label = "") {
-        when (searchState) {
-            is Result.Loading -> {
-                Column(
-                    Modifier.fillMaxSize()
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                }
+fun TabContent(
+    comicSearchState: Result<List<SearchComic>>,
+    authorSearchState: Result<List<AuthorSearch>>,
+    scanlationGroupSearchState: Result<List<ScanlationGroupSearch>>,
+    selectedTabIndex: Int
+) {
+    val currentState = when (selectedTabIndex) {
+        0, 1 -> comicSearchState // "All" và "Manga" cùng dùng comicSearchState
+        2 -> authorSearchState   // "Author" dùng authorSearchState
+        3 -> scanlationGroupSearchState // "Group" dùng scanlationGroupSearchState
+        else -> comicSearchState
+    }
+
+    when (currentState) {
+        is Result.Loading -> {
+            Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator()
             }
-            is Result.Success -> {
-                val searchResults = searchState.data
-                Column(
-                    Modifier.wrapContentSize()
-                ) {
-//                    searchResults.forEach { comic ->
-//                        MangaSearchResultItem(comic) {}
-//                    }
-                    AnimatedContent(targetState = selectedTabIndex, label = "") {
-                        when (selectedTabIndex) {
-                            0 -> {
-                                Column(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-
-                                }
-                                // Add your content for "All" here
+        }
+        is Result.Success -> {
+            val searchResults = currentState.data
+            AnimatedContent(targetState = selectedTabIndex, label = "") {
+                when (selectedTabIndex) {
+                    0, 1 -> { // Manga list
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            searchResults.filterIsInstance<SearchComic>().forEach { comic ->
+                                MangaSearchResultItem(comic) {}
                             }
-                            1 -> {
-                                Column {
-                                    searchResults.forEach { it ->
-                                        MangaSearchResultItem(it) {}
-                                    }
-                                }
-                                // Add your content for "Manga" here
+                        }
+                    }
+                    2 -> { // Author list
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            searchResults.filterIsInstance<AuthorSearch>().forEach { author ->
+                                Text(author.name ?: "Unknown Author")
+                                // Bạn có thể tạo AuthorSearchResultItem nếu muốn đẹp hơn
                             }
-                            2 -> {
-                                Column(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-
-                                }
-                                // Add your content for "Author" here
-                            }
-                            3 -> {
-                                Column(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-
-                                }
-                                // Add your content for "Group" here
+                        }
+                    }
+                    3 -> { // Group list
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            searchResults.filterIsInstance<ScanlationGroupSearch>().forEach { group ->
+                                Text(group.name ?: "Unknown Group")
+                                // Bạn cũng có thể custom GroupSearchResultItem
                             }
                         }
                     }
                 }
             }
-            is Result.Error -> {
-                val errorMessage = searchState.exception.message ?: "Unknown error"
-                Text(text = errorMessage, color = MaterialTheme.colorScheme.onError)
+        }
+        is Result.Error -> {
+            val errorMessage = currentState.exception.message ?: "Unknown error"
+            Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
             }
         }
     }
@@ -203,6 +241,6 @@ fun TabContent(searchState: Result<List<SearchComic>>, selectedTabIndex: Int) {
 @Preview
 @Composable
 private fun Prev1() {
-    SearchScreen(viewModel = hiltViewModel<SearchViewModel>())
+//    SearchScreen(viewModel = hiltViewModel<SearchViewModel>())
 }
 

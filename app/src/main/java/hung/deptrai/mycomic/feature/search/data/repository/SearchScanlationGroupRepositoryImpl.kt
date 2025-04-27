@@ -21,8 +21,10 @@ class SearchScanlationGroupRepositoryImpl @Inject constructor(
                 } ?: emptyList()
                 ResultWrapper.Success(rs)
             }
-            is ResultWrapper.GenericError -> response
-            is ResultWrapper.NetworkError -> response
+            is ResultWrapper.GenericError ->
+                response
+            is ResultWrapper.NetworkError ->
+                response
         }
     }
 }

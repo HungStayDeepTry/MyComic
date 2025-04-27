@@ -8,6 +8,7 @@ import hung.deptrai.mycomic.core.network.author.SearchAuthorByTitleAPI
 import hung.deptrai.mycomic.core.network.coverArt.CoverArtAPI
 import hung.deptrai.mycomic.core.network.scanlationGroup.SearchScanlationGroupAPI
 import hung.deptrai.mycomic.core.network.statistic.SearchStatisticsAPI
+import hung.deptrai.mycomic.core.network.user.UserSearchAPI
 import hung.deptrai.mycomic.feature.search.data.remote.SearchComicAPI
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -51,5 +52,9 @@ object NetworkModule {
     @Provides
     fun provideSearchScanlationGroupByTitleAPI(retrofit: Retrofit): SearchScanlationGroupAPI{
         return retrofit.create(SearchScanlationGroupAPI::class.java)
+    }
+
+    fun provideSearchUserByIdAPI(retrofit: Retrofit): UserSearchAPI{
+        return retrofit.create(UserSearchAPI::class.java)
     }
 }

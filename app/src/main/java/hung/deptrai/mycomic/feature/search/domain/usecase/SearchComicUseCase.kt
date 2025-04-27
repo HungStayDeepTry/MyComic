@@ -4,6 +4,7 @@ import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.domain.model.MangaEntity
 import hung.deptrai.mycomic.feature.search.data.remote.dto.MangaDTO
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchComicRepository
+import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
 import hung.deptrai.mycomic.feature.search.presentation.SearchComic
 import javax.inject.Inject
 
@@ -41,12 +42,12 @@ class SearchComicUseCase @Inject constructor(
         return searchComics
     }
 
-    suspend fun searchComicByTitle(title: String): Any {
+    suspend fun searchComicByTitle(title: String): ResultWrapper<List<SearchComic>> {
         // Lấy dữ liệu từ repository
         return when (val resultWrapper = searchComicRepository.searchComicByTitle(title)) {
             is ResultWrapper.Success -> {
                 // Chuyển đổi từ MangaEntity sang SearchComicModel
-                val searchComics = mapToSearchComicModel(resultWrapper.data)
+                val searchComics = mapToSearchComicModel(resultWrapper.data) ?: emptyList()
 //                ResultWrapper.Success(searchComics.ifEmpty { emptyList() }) // Đảm bảo trả về danh sách không phải null
                 ResultWrapper.Success(searchComics)
             }

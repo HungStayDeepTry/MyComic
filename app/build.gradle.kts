@@ -84,4 +84,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.coil.compose)
     implementation (libs.androidx.material.icons.extended)
+
+    //accompanist
+    implementation(libs.accompanist.drawablepainter)
 }

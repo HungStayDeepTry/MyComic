@@ -1,4 +1,6 @@
 [versions]
+accompanistDrawablepainter = "0.34.0"
+accompanistGlide = "0.24.6-alpha"
 agp = "8.7.3"
 coilCompose = "2.2.2"
 compose = "2.6.2"
@@ -26,6 +28,7 @@ hilt = "2.55"
 hiltNavigationCompose = "1.2.0"
 
 [libraries]
+accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanistDrawablepainter" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }

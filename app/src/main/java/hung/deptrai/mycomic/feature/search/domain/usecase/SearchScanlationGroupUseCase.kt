@@ -47,7 +47,7 @@ class SearchScanlationGroupUseCase @Inject constructor(
             ScanlationGroupSearch(
                 id = entity.id,
                 name = entity.name,
-                leaderName = leaderIDs.get(0),
+                leaderName = leaderIDs,
                 focusedLanguages = entity.focusedLanguages,
                 isOfficial = entity.official,
                 isVerified = entity.verified
