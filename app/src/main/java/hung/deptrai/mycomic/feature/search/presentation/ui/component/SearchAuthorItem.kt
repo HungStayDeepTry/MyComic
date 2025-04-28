@@ -38,7 +38,10 @@ fun SearchAuthorItem(
     authorSearch: AuthorSearch
 ) {
     Box(
-        Modifier.fillMaxWidth()
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+            .clip(RoundedCornerShape(4.dp))
     ) {
         Card(
             shape = RoundedCornerShape(4.dp),

@@ -24,6 +24,8 @@ import kotlinx.coroutines.launch
 import hung.deptrai.mycomic.R
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
 import hung.deptrai.mycomic.feature.search.presentation.Result
@@ -36,6 +38,7 @@ import hung.deptrai.mycomic.feature.search.presentation.ui.component.SearchAutho
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ScanlationGroupSearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TokenViewModel
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.UserSearchViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun SearchScreen(
@@ -47,46 +50,57 @@ fun SearchScreen(
 ) {
     val comicSearchState by comicViewModel.searchState.collectAsState()
     val authorSearchState by authorViewModel.searchState.collectAsState()
-//    val pr = LocalViewModelStoreOwner.current
     val scanlationGroupSearchState by scanlationGroupSearchViewModel.searchState.collectAsState()
     val tokenState by tokenViewModel.tokenState.collectAsState()
-    var query by remember { mutableStateOf("") }
-    val selectedTabIndex = remember { mutableStateOf(0) }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            SearchBar(query = query, onQueryChange = {
-                query = it
-//                viewModel.searchComic(it)
-                comicViewModel.search(it)
-                authorViewModel.search(it)
-                scanlationGroupSearchViewModel.search(it)
-                tokenViewModel.readToken()
-            })
-        }
+    var textInput by rememberSaveable { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
+    val selectedTabIndex = rememberSaveable { mutableStateOf(0) }
 
-        item {
-            SearchTabs(
-                selectedTabIndex = selectedTabIndex.value,
-                onTabSelected = { selectedTabIndex.value = it }
-            )
-        }
+    // Debounce query sau 500ms
+    LaunchedEffect(textInput) {
+        delay(500)
+        query = textInput
 
-        item {
-            TabContent(
-                comicSearchState = comicSearchState,
-                authorSearchState = authorSearchState,
-                scanlationGroupSearchState = scanlationGroupSearchState,
-                selectedTabIndex = selectedTabIndex.value,
-                userSearchViewModel = userSearchViewModel,
-                token = tokenState,
-                query = query
-            )
+        // Chỉ khi query thực sự thay đổi sau delay mới search
+        comicViewModel.search(query)
+        authorViewModel.search(query)
+        scanlationGroupSearchViewModel.search(query)
+        tokenViewModel.readToken()
+    }
+
+    Scaffold { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp)
+                .padding(innerPadding),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                SearchBar(query = textInput, onQueryChange = {
+                    textInput = it
+                })
+            }
+
+            item {
+                SearchTabs(
+                    selectedTabIndex = selectedTabIndex.value,
+                    onTabSelected = { selectedTabIndex.value = it }
+                )
+            }
+
+            item {
+                TabContent(
+                    comicSearchState = comicSearchState,
+                    authorSearchState = authorSearchState,
+                    scanlationGroupSearchState = scanlationGroupSearchState,
+                    selectedTabIndex = selectedTabIndex.value,
+                    userSearchViewModel = userSearchViewModel,
+                    token = tokenState,
+                    query = query
+                )
+            }
         }
     }
 }
@@ -148,18 +162,27 @@ fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
     TabRow(
         selectedTabIndex = selectedTabIndex,
         indicator = { tabPositions ->
-            SecondaryIndicator(
-                modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                color = MaterialTheme.colorScheme.primary
+            Box(
+                Modifier
+                    .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                    .height(3.dp)
+                    .background(MaterialTheme.colorScheme.primary)
             )
-        }
+        },
+        divider = {}, // Loại bỏ đường kẻ phân cách dưới TabRow
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
     ) {
         listOf("All", "Manga", "Author", "Group").forEachIndexed { index, title ->
             Tab(
                 selected = selectedTabIndex == index,
                 onClick = { onTabSelected(index) },
                 text = { Text(title) },
-                modifier = Modifier.offset(x = if (selectedTabIndex == index) offsetAnim.value.dp else 0.dp)
+                modifier = Modifier
+                    .offset(x = if (selectedTabIndex == index) offsetAnim.value.dp else 0.dp)
+//                    .background(
+//                        if (selectedTabIndex == index) Color.Blue
+//                        else Color.Transparent
+//                    )
             )
         }
     }
@@ -197,10 +220,15 @@ fun TabContent(
             AnimatedContent(targetState = selectedTabIndex, label = "") {
                 when (selectedTabIndex) {
                     0, 1 -> { // Manga list
-
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
+                            Text(
+                                text = "Manga",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(8.dp)
+                            )
                             searchResults.filterIsInstance<SearchComic>().forEach { comic ->
                                 MangaSearchResultItem(comic) {}
                             }
@@ -210,6 +238,12 @@ fun TabContent(
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
+                            Text(
+                                text = "Author",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(8.dp)
+                            )
                             searchResults.filterIsInstance<AuthorSearch>().forEach { author ->
                                 SearchAuthorItem(author)
                             }
@@ -229,6 +263,12 @@ fun TabContent(
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
+                            Text(
+                                text = "Group",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(8.dp)
+                            )
                             leaderIdsList.forEach { group ->
                                 Column {
 //                                    Text(group.name)

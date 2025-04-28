@@ -46,13 +46,16 @@ fun ScanlationGroupSearchItem(
 ) {
     val gradientGroupBanner = Brush.horizontalGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.onBackground,
-            MaterialTheme.colorScheme.onBackground,
-            MaterialTheme.colorScheme.background
+            Color.Black,
+            Color.Black,
+            Color.White
         )
     )
     Box(
-        Modifier.fillMaxWidth()
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+            .clip(RoundedCornerShape(4.dp))
     ) {
         Card(
             shape = RoundedCornerShape(4.dp),

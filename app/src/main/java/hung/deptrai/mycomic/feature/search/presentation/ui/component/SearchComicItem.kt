@@ -34,8 +34,9 @@ fun MangaSearchResultItem(
 ) {
     Box(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 8.dp, vertical = 8.dp)
             .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
             .clickable { onItemClick(manga.id) }
     ) {
         // Card chứa nội dung
@@ -61,6 +62,7 @@ fun MangaSearchResultItem(
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
+                        .padding(top = 2.dp)
                 ) {
                     Text(
                         text = manga.title,
