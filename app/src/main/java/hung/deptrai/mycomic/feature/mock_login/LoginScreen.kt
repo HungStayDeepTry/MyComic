@@ -19,9 +19,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import hung.deptrai.mycomic.core.data.local.TokenManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -75,7 +79,8 @@ fun LoginScreen(context: Context ,navController: NavController) {
 
                     val token = parseAccessToken(responseBody)
                     token?.let {
-                        context.saveAccessToken(it)
+//                        context.saveAccessToken(it)
+                        TokenManager.saveToken(context, token)
                         snackbarHostState.showSnackbar("Đăng nhập thành công")
                         Toast.makeText(context, "Access Token: $it", Toast.LENGTH_LONG).show()
                         navController.navigate("search")
@@ -104,19 +109,23 @@ fun LoginScreen(context: Context ,navController: NavController) {
 
 // Giả lập hàm để phân tích và lấy access token từ response body
 fun parseAccessToken(responseBody: String?): String? {
-    // Giả sử responseBody chứa JSON và ta cần phân tích nó để lấy accessToken
-    // Để đơn giản, ở đây ta sẽ giả định lấy token từ responseBody nếu nó chứa token
-
-    return responseBody?.let {
-        // Trích xuất accessToken từ chuỗi JSON
-        // Bạn có thể dùng thư viện như Gson hoặc Moshi để phân tích JSON thực tế ở đây
-        // Giả sử trong trường hợp này là "session": "abc123"
-        // Ví dụ đơn giản:
-        if (it.contains("session")) {
-            // Tìm kiếm phần tử session trong response và trả về
-            it.substringAfter("\"session\":\"").substringBefore("\"")
-        } else {
-            null
-        }
+    return try {
+        val tokenResponse = responseBody?.let { Json.decodeFromString<TokenResponse>(it) }
+        tokenResponse?.access_token
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }
+@Serializable
+data class TokenResponse(
+    val access_token: String,
+    val expires_in: Int,
+    val refresh_expires_in: Int,
+    val refresh_token: String,
+    val token_type: String,
+    @SerialName("not-before-policy") val notBeforePolicy: Int? = null,  // Giữ lại trường này để ánh xạ với JSON
+    @SerialName("session_state") val sessionState : String? = null,
+    val scope: String,
+    val client_type: String
+)

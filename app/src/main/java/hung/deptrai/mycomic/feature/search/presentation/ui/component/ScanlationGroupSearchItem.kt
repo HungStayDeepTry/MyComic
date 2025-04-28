@@ -32,14 +32,17 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import hung.deptrai.mycomic.R
 import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.presentation.UserSearch
 
 @Composable
 fun ScanlationGroupSearchItem(
-    scanlationGroupSearch: ScanlationGroupSearch
+    scanlationGroupSearch: ScanlationGroupSearch,
+    userSearchs: List<UserSearch>
 ) {
     val gradientGroupBanner = Brush.horizontalGradient(
         colors = listOf(
@@ -100,22 +103,26 @@ fun ScanlationGroupSearchItem(
                             text = scanlationGroupSearch.name,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.ExtraBold,
-                            color = Color.White
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Row {
-                            Text(
-                                text = if (scanlationGroupSearch.leaderName.isNullOrEmpty()) "No leader" else "Leader: ",
-                                color = Color.White
-                            )
-                            scanlationGroupSearch.leaderName?.forEachIndexed { index, name ->
+                            val leaderIds = scanlationGroupSearch.leaderName.orEmpty() // list id của leader
+                            val leaderNames = userSearchs
+                                .filter { it.id in leaderIds } // lọc ra những UserSearch có id nằm trong leaderName
+                                .map { it.name } // lấy tên của họ
+
+                            val hasMatchingLeader = leaderNames.isNotEmpty()
+
+                            Row {
                                 Text(
-                                    text = name,
+                                    text = if (!hasMatchingLeader) "No leader" else "Leader: ",
                                     color = Color.White
                                 )
-                                // Nếu không phải phần tử cuối, thêm dấu ", "
-                                if (index < scanlationGroupSearch.leaderName.size - 1) {
+                                if (hasMatchingLeader) {
                                     Text(
-                                        text = ", ",
+                                        text = leaderNames.joinToString(", "), // ghép các tên thành chuỗi cách nhau bằng dấu ", "
                                         color = Color.White
                                     )
                                 }
@@ -131,5 +138,5 @@ fun ScanlationGroupSearchItem(
 @Preview
 @Composable
 private fun Prev3() {
-    ScanlationGroupSearchItem(ScanlationGroupSearch("1", "hungTeam", listOf("hung", "hung2"), emptyList(), false, false))
+//    ScanlationGroupSearchItem(ScanlationGroupSearch("1", "hungTeam", listOf("hung", "hung2"), emptyList(), false, false))
 }

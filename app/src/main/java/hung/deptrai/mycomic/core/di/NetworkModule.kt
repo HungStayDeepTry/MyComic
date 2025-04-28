@@ -54,7 +54,9 @@ object NetworkModule {
         return retrofit.create(SearchScanlationGroupAPI::class.java)
     }
 
+    @Provides
     fun provideSearchUserByIdAPI(retrofit: Retrofit): UserSearchAPI{
         return retrofit.create(UserSearchAPI::class.java)
     }
+
 }

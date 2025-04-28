@@ -8,8 +8,12 @@ import hung.deptrai.mycomic.feature.search.data.repository.SearchAuthorRepositor
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchComicRepository
 import hung.deptrai.mycomic.feature.search.data.repository.SearchComicRepositoryImpl
 import hung.deptrai.mycomic.feature.search.data.repository.SearchScanlationGroupRepositoryImpl
+import hung.deptrai.mycomic.feature.search.data.repository.SearchUserRepositoryImpl
+import hung.deptrai.mycomic.feature.search.data.repository.TokenRepositoryImpl
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchAuthorRepository
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchScanlationGroupRepository
+import hung.deptrai.mycomic.feature.search.domain.repository.SearchUserRepository
+import hung.deptrai.mycomic.feature.search.domain.repository.TokenRepository
 import javax.inject.Singleton
 
 @Module
@@ -33,4 +37,16 @@ abstract class RepositoryModule {
     abstract fun bindSearchScanlationGroupRepository(
         impl: SearchScanlationGroupRepositoryImpl
     ): SearchScanlationGroupRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSearchUserRepository(
+        impl: SearchUserRepositoryImpl
+    ): SearchUserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTokenRepository(
+        impl: TokenRepositoryImpl
+    ): TokenRepository
 }

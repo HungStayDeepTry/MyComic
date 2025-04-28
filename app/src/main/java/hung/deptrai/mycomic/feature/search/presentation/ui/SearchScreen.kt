@@ -31,18 +31,25 @@ import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
 import hung.deptrai.mycomic.feature.search.presentation.SearchComic
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.SearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.ui.component.MangaSearchResultItem
+import hung.deptrai.mycomic.feature.search.presentation.ui.component.ScanlationGroupSearchItem
+import hung.deptrai.mycomic.feature.search.presentation.ui.component.SearchAuthorItem
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ScanlationGroupSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TokenViewModel
+import hung.deptrai.mycomic.feature.search.presentation.viewmodel.UserSearchViewModel
 
 @Composable
 fun SearchScreen(
     comicViewModel: SearchViewModel<SearchComic>,
     authorViewModel: SearchViewModel<AuthorSearch>,
-    scanlationGroupSearchViewModel: SearchViewModel<ScanlationGroupSearch>
+    scanlationGroupSearchViewModel: SearchViewModel<ScanlationGroupSearch>,
+    userSearchViewModel: UserSearchViewModel,
+    tokenViewModel: TokenViewModel
 ) {
     val comicSearchState by comicViewModel.searchState.collectAsState()
     val authorSearchState by authorViewModel.searchState.collectAsState()
 //    val pr = LocalViewModelStoreOwner.current
     val scanlationGroupSearchState by scanlationGroupSearchViewModel.searchState.collectAsState()
+    val tokenState by tokenViewModel.tokenState.collectAsState()
     var query by remember { mutableStateOf("") }
     val selectedTabIndex = remember { mutableStateOf(0) }
 
@@ -57,20 +64,9 @@ fun SearchScreen(
                 query = it
 //                viewModel.searchComic(it)
                 comicViewModel.search(it)
-                when(selectedTabIndex.value){
-                    0 -> {
-//                        authorViewModel.search(it)
-                    }
-                    1 ->{
-                        comicViewModel.search(it)
-                    }
-                    2 ->{
-                        authorViewModel.search(it)
-                    }
-                    3 ->{
-                        scanlationGroupSearchViewModel.search(it)
-                    }
-                }
+                authorViewModel.search(it)
+                scanlationGroupSearchViewModel.search(it)
+                tokenViewModel.readToken()
             })
         }
 
@@ -86,7 +82,10 @@ fun SearchScreen(
                 comicSearchState = comicSearchState,
                 authorSearchState = authorSearchState,
                 scanlationGroupSearchState = scanlationGroupSearchState,
-                selectedTabIndex = selectedTabIndex.value
+                selectedTabIndex = selectedTabIndex.value,
+                userSearchViewModel = userSearchViewModel,
+                token = tokenState,
+                query = query
             )
         }
     }
@@ -171,7 +170,10 @@ fun TabContent(
     comicSearchState: Result<List<SearchComic>>,
     authorSearchState: Result<List<AuthorSearch>>,
     scanlationGroupSearchState: Result<List<ScanlationGroupSearch>>,
-    selectedTabIndex: Int
+    token: String,
+    userSearchViewModel: UserSearchViewModel,
+    selectedTabIndex: Int,
+    query: String
 ) {
     val currentState = when (selectedTabIndex) {
         0, 1 -> comicSearchState // "All" và "Manga" cùng dùng comicSearchState
@@ -195,6 +197,7 @@ fun TabContent(
             AnimatedContent(targetState = selectedTabIndex, label = "") {
                 when (selectedTabIndex) {
                     0, 1 -> { // Manga list
+
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -208,18 +211,41 @@ fun TabContent(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             searchResults.filterIsInstance<AuthorSearch>().forEach { author ->
-                                Text(author.name ?: "Unknown Author")
-                                // Bạn có thể tạo AuthorSearchResultItem nếu muốn đẹp hơn
+                                SearchAuthorItem(author)
                             }
                         }
                     }
                     3 -> { // Group list
+                        val leaderIdsList = searchResults.filterIsInstance<ScanlationGroupSearch>()
+                        val leaderIds = leaderIdsList.flatMap { it.leaderName ?: emptyList() }
+                        val users = userSearchViewModel.searchState.collectAsState().value
+// Gửi yêu cầu lấy users
+                        LaunchedEffect(leaderIds) {
+                            if (leaderIds.isNotEmpty()) {
+                                userSearchViewModel.getUsers(token = token, ids = leaderIds)
+                            }
+                        }
+
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            searchResults.filterIsInstance<ScanlationGroupSearch>().forEach { group ->
-                                Text(group.name ?: "Unknown Group")
-                                // Bạn cũng có thể custom GroupSearchResultItem
+                            leaderIdsList.forEach { group ->
+                                Column {
+//                                    Text(group.name)
+//
+                                    val matchedUsers = group.leaderName
+                                        ?.mapNotNull { leaderId ->
+                                            // Tìm user có id trùng với leaderId
+                                            (users as? Result.Success)?.data
+                                                ?.firstOrNull { it.id == leaderId }
+                                        }
+                                        ?: emptyList()
+//
+//                                    matchedUsers.forEach { user ->
+//                                        Text(text = user.name)
+//                                    }
+                                    ScanlationGroupSearchItem(group, matchedUsers)
+                                }
                             }
                         }
                     }

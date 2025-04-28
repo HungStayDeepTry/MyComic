@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 android {
@@ -87,4 +88,5 @@ dependencies {
 
     //accompanist
     implementation(libs.accompanist.drawablepainter)
+    implementation(libs.kotlinx.serialization.json)
 }

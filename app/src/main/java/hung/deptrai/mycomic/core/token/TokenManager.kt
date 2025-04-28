@@ -1,9 +1,10 @@
 package hung.deptrai.mycomic.core.token
 
 import android.content.Context
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import hung.deptrai.mycomic.core.data.local.encryptedDataStore
+import androidx.datastore.preferences.preferencesDataStore
 import hung.deptrai.mycomic.core.network.RefreshTokenRequest
 import hung.deptrai.mycomic.core.network.TokenApi
 import kotlinx.coroutines.flow.*
@@ -11,6 +12,9 @@ import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
+val Context.encryptedDataStore: androidx.datastore.core.DataStore<Preferences> by preferencesDataStore(
+    name = "encrypted_prefs"
+)
 @Singleton
 class TokenManager @Inject constructor(
     private val context: Context,
