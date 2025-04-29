@@ -1,6 +1,6 @@
 package hung.deptrai.mycomic.core.domain.model
 
-import hung.deptrai.mycomic.feature.search.data.remote.dto.Relationship
+import hung.deptrai.mycomic.feature.search.data.dto.Relationship
 
 data class ScanlationGroupEntity(
     val id: String,
@@ -17,5 +17,5 @@ data class ScanlationGroupEntity(
     val createdAt: String,
     val updatedAt: String,
     val version: Int,
-    val relationships: List<Relationship>
+    val relationships: List<hung.deptrai.mycomic.feature.search.data.dto.Relationship>
 )

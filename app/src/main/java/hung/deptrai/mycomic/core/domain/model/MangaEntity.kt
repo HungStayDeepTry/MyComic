@@ -1,13 +1,13 @@
 package hung.deptrai.mycomic.core.domain.model
 
-import hung.deptrai.mycomic.feature.search.data.remote.dto.AltTitle
-import hung.deptrai.mycomic.feature.search.data.remote.dto.Description
-import hung.deptrai.mycomic.feature.search.data.remote.dto.Links
-import hung.deptrai.mycomic.feature.search.data.remote.dto.Relationship
-import hung.deptrai.mycomic.feature.search.data.remote.dto.Tag
-import hung.deptrai.mycomic.feature.search.data.remote.dto.Title
-import hung.deptrai.mycomic.feature.search.data.remote.dto.author.AuthorDTO
-import hung.deptrai.mycomic.feature.search.data.remote.dto.coverArt.CoverArtDTO
+import hung.deptrai.mycomic.feature.search.data.dto.AltTitle
+import hung.deptrai.mycomic.feature.search.data.dto.Description
+import hung.deptrai.mycomic.feature.search.data.dto.Links
+import hung.deptrai.mycomic.feature.search.data.dto.Relationship
+import hung.deptrai.mycomic.feature.search.data.dto.Tag
+import hung.deptrai.mycomic.feature.search.data.dto.Title
+import hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO
+import hung.deptrai.mycomic.feature.search.data.dto.coverArt.CoverArtDTO
 
 data class MangaEntity(
     val id: String,

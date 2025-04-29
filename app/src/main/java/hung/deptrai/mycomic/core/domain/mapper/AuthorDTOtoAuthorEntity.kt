@@ -1,10 +1,10 @@
 package hung.deptrai.mycomic.core.domain.mapper
 
 import hung.deptrai.mycomic.core.domain.model.AuthorEntity
-import hung.deptrai.mycomic.feature.search.data.remote.dto.author.AuthorDTO
+import hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO
 
 fun AuthorDTOtoAuthorEntity (
-    authorDTO: AuthorDTO
+    authorDTO: hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO
 ): AuthorEntity{
     val attr = authorDTO.attributes
     return AuthorEntity(

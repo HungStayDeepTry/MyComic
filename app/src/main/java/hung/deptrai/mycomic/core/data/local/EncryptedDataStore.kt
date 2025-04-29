@@ -3,14 +3,13 @@ package hung.deptrai.mycomic.core.data.local
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
-import kotlinx.serialization.Serializable
 import javax.crypto.spec.SecretKeySpec
 
-@Serializable
-data class TokenData(val token: String)
 
 val Context.tokenDataStore: DataStore<String> by dataStore(
     fileName = "token_data",
@@ -28,7 +27,9 @@ class EncryptedSerializer : androidx.datastore.core.Serializer<String> {
 
     override suspend fun writeTo(t: String, output: java.io.OutputStream) {
         val encryptedBytes = encrypt(t.toByteArray())
-        output.write(encryptedBytes)
+        withContext(Dispatchers.IO) {
+            output.write(encryptedBytes)
+        }
     }
 
     private fun encrypt(data: ByteArray): ByteArray {

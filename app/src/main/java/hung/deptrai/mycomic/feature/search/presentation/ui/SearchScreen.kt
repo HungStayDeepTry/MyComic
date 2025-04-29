@@ -4,41 +4,63 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.runtime.*
-import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.launch
 import hung.deptrai.mycomic.R
-import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.text.font.FontWeight
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
 import hung.deptrai.mycomic.feature.search.presentation.Result
 import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
 import hung.deptrai.mycomic.feature.search.presentation.SearchComic
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.SearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.TagSearch
 import hung.deptrai.mycomic.feature.search.presentation.ui.component.MangaSearchResultItem
 import hung.deptrai.mycomic.feature.search.presentation.ui.component.ScanlationGroupSearchItem
 import hung.deptrai.mycomic.feature.search.presentation.ui.component.SearchAuthorItem
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ScanlationGroupSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.viewmodel.SearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TagSearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TokenViewModel
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.UserSearchViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(
@@ -46,12 +68,14 @@ fun SearchScreen(
     authorViewModel: SearchViewModel<AuthorSearch>,
     scanlationGroupSearchViewModel: SearchViewModel<ScanlationGroupSearch>,
     userSearchViewModel: UserSearchViewModel,
-    tokenViewModel: TokenViewModel
+    tokenViewModel: TokenViewModel,
+    tagViewModel: TagSearchViewModel
 ) {
     val comicSearchState by comicViewModel.searchState.collectAsState()
     val authorSearchState by authorViewModel.searchState.collectAsState()
     val scanlationGroupSearchState by scanlationGroupSearchViewModel.searchState.collectAsState()
     val tokenState by tokenViewModel.tokenState.collectAsState()
+    val tagsState by tagViewModel.tagState.collectAsState()
 
     var textInput by rememberSaveable { mutableStateOf("") }
     var query by rememberSaveable { mutableStateOf("") }
@@ -64,6 +88,7 @@ fun SearchScreen(
 
         // Chỉ khi query thực sự thay đổi sau delay mới search
         comicViewModel.search(query)
+        tagViewModel.getTags()
         authorViewModel.search(query)
         scanlationGroupSearchViewModel.search(query)
         tokenViewModel.readToken()
@@ -73,6 +98,7 @@ fun SearchScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 8.dp)
                 .padding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -95,6 +121,7 @@ fun SearchScreen(
                     comicSearchState = comicSearchState,
                     authorSearchState = authorSearchState,
                     scanlationGroupSearchState = scanlationGroupSearchState,
+                    tagState = tagsState,
                     selectedTabIndex = selectedTabIndex.value,
                     userSearchViewModel = userSearchViewModel,
                     token = tokenState,
@@ -145,6 +172,7 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
         )
     }
 }
+
 @Composable
 fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
     val offsetAnim = remember { Animatable(0f) }
@@ -187,12 +215,14 @@ fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
         }
     }
 }
+
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
 fun TabContent(
     comicSearchState: Result<List<SearchComic>>,
     authorSearchState: Result<List<AuthorSearch>>,
     scanlationGroupSearchState: Result<List<ScanlationGroupSearch>>,
+    tagState: Result<List<TagSearch>>,
     token: String,
     userSearchViewModel: UserSearchViewModel,
     selectedTabIndex: Int,
@@ -215,6 +245,7 @@ fun TabContent(
                 CircularProgressIndicator()
             }
         }
+
         is Result.Success -> {
             val searchResults = currentState.data
             AnimatedContent(targetState = selectedTabIndex, label = "") {
@@ -230,10 +261,14 @@ fun TabContent(
                                 modifier = Modifier.padding(8.dp)
                             )
                             searchResults.filterIsInstance<SearchComic>().forEach { comic ->
-                                MangaSearchResultItem(comic) {}
+                                MangaSearchResultItem(
+                                    comic,
+                                    tagState
+                                ) {}
                             }
                         }
                     }
+
                     2 -> { // Author list
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -249,6 +284,7 @@ fun TabContent(
                             }
                         }
                     }
+
                     3 -> { // Group list
                         val leaderIdsList = searchResults.filterIsInstance<ScanlationGroupSearch>()
                         val leaderIds = leaderIdsList.flatMap { it.leaderName ?: emptyList() }
@@ -292,6 +328,7 @@ fun TabContent(
                 }
             }
         }
+
         is Result.Error -> {
             val errorMessage = currentState.exception.message ?: "Unknown error"
             Column(
@@ -304,6 +341,7 @@ fun TabContent(
         }
     }
 }
+
 @Preview
 @Composable
 private fun Prev1() {

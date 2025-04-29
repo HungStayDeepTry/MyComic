@@ -86,10 +86,16 @@ fun SearchAuthorItem(
                 }
                 Row {
                     Text(
-                        text = if(authorSearch.mangaCount>0){
+                        text = if(authorSearch.mangaCount in 2..9){
                             authorSearch.mangaCount.toString() + " titles"
-                        } else{
-                            authorSearch.mangaCount.toString() + " title"
+                        }else if(authorSearch.mangaCount>9){
+                            "9+ titles"
+                        }
+                        else if(authorSearch.mangaCount == 1){
+                            "1 title"
+                        }
+                        else{
+                            "No titles"
                         },
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.bodySmall,

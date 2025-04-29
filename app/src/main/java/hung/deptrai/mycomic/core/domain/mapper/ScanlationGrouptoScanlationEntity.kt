@@ -1,10 +1,10 @@
 package hung.deptrai.mycomic.core.domain.mapper
 
 import hung.deptrai.mycomic.core.domain.model.ScanlationGroupEntity
-import hung.deptrai.mycomic.feature.search.data.remote.dto.scanlationGroup.ScanlationGroupDTO
+import hung.deptrai.mycomic.feature.search.data.dto.scanlationGroup.ScanlationGroupDTO
 
 fun ScanlationGrouptoScanlationEntity(
-    scanlationGroupDTO: ScanlationGroupDTO
+    scanlationGroupDTO: hung.deptrai.mycomic.feature.search.data.dto.scanlationGroup.ScanlationGroupDTO
 ): ScanlationGroupEntity{
     val attr = scanlationGroupDTO.attributes
     return ScanlationGroupEntity(

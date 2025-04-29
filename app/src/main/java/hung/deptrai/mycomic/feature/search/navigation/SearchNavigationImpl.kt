@@ -13,6 +13,7 @@ import hung.deptrai.mycomic.feature.search.presentation.viewmodel.AuthorSearchVi
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ComicSearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ScanlationGroupSearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.SearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TagSearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TokenViewModel
 import hung.deptrai.mycomic.feature.search.presentation.viewmodel.UserSearchViewModel
 import javax.inject.Inject
@@ -25,7 +26,8 @@ class SearchNavigationImpl @Inject constructor() : FeatureNavigation{
                 scanlationGroupSearchViewModel = hiltViewModel<ScanlationGroupSearchViewModel>(),
                 authorViewModel = hiltViewModel<AuthorSearchViewModel>(),
                 tokenViewModel = hiltViewModel<TokenViewModel>(),
-                userSearchViewModel = hiltViewModel<UserSearchViewModel>()
+                userSearchViewModel = hiltViewModel<UserSearchViewModel>(),
+                tagViewModel = hiltViewModel<TagSearchViewModel>()
             )
         }
     }

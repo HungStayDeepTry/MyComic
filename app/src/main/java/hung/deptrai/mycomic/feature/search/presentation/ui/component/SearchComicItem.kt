@@ -21,15 +21,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import hung.deptrai.mycomic.feature.search.presentation.SearchComic
 import hung.deptrai.mycomic.R
+import hung.deptrai.mycomic.feature.search.presentation.Result
+import hung.deptrai.mycomic.feature.search.presentation.TagSearch
 import hung.deptrai.mycomic.feature.search.presentation.ui.util.getStatusColor
+@OptIn(ExperimentalLayoutApi::class)
 @SuppressLint("DefaultLocale")
 @Composable
 fun MangaSearchResultItem(
     manga: SearchComic,
+    tagState: Result<List<TagSearch>>,
     onItemClick: (String) -> Unit
 ) {
     Box(
@@ -44,10 +49,14 @@ fun MangaSearchResultItem(
             shape = RoundedCornerShape(8.dp),
             elevation = CardDefaults.cardElevation(4.dp),
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Row(
-                modifier = Modifier.height(100.dp),
+                modifier = Modifier
+                    .height(100.dp),
                 horizontalArrangement = Arrangement.Start
             ) {
                 AsyncImage(
@@ -69,7 +78,8 @@ fun MangaSearchResultItem(
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Row(
@@ -84,7 +94,8 @@ fun MangaSearchResultItem(
                             Spacer(Modifier.width(2.dp))
                             Text(
                                 text = String.format("%.2f", manga.bayesianRating?.toFloat() ?: 0f),
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                         }
                         Row(Modifier.width(73.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -94,7 +105,8 @@ fun MangaSearchResultItem(
                             )
                             Text(
                                 text = formatNumberShort(manga.follows ?: 0),
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                         }
                         Row(Modifier.width(55.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -105,7 +117,8 @@ fun MangaSearchResultItem(
                             Spacer(Modifier.width(2.dp))
                             Text(
                                 text = "N/A",
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                         }
                         Column {
@@ -121,7 +134,8 @@ fun MangaSearchResultItem(
                                 )
                                 Text(
                                     text = formatNumberShort(manga.commentsCount ?: 0).toString(),
-                                    style = MaterialTheme.typography.bodyMedium
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onBackground
                                 )
                             }
                         }
@@ -129,8 +143,9 @@ fun MangaSearchResultItem(
                     Spacer(Modifier.height(4.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clip(RoundedCornerShape(5.dp))
-                            .background(MaterialTheme.colorScheme.surface)
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Icon(
                             modifier = Modifier.padding(start = 4.dp),
@@ -142,8 +157,29 @@ fun MangaSearchResultItem(
                         Text(
                             modifier = Modifier.padding(end = 4.dp),
                             text = manga.status,
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
+                        if (tagState is Result.Success) {
+                            val matchedTags = tagState.data.filter { it.id in manga.tags }
+                            FlowRow( // cần androidx.compose.foundation.layout.FlowRow
+                                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                matchedTags.forEach { tag ->
+                                    Text(
+                                        text = tag.name,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
                     Spacer(Modifier.height(4.dp))
                     Row(
@@ -151,7 +187,8 @@ fun MangaSearchResultItem(
                     ) {
                         Text(
                             text = manga.description,
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -166,7 +203,10 @@ fun MangaSearchResultItem(
                 .align(Alignment.BottomStart) // Sử dụng Align ở đây để đặt gradient ở phía dưới cùng của Card
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.White) // Thay màu White bằng màu nền của card nếu cần
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.background
+                        ) // Thay màu White bằng màu nền của card nếu cần
                     )
                 )
         )
@@ -181,4 +221,12 @@ fun formatNumberShort(value: Int): String {
         value >= 1_000 -> String.format("%.1fK", value / 1_000f)
         else -> value.toString()
     }
+}
+
+@Preview
+@Composable
+private fun Prev5() {
+//    MangaSearchResultItem(
+//        manga = SearchComic(id = "1", imageUrl = "", description = "123", title = "title1", views = 123123, rating = 9.1, averageRating = 9.1, status = "ongoing", authors = listOf("hung"), bayesianRating = 9.2, coverArtUrl = "", follows = 123123, chapters = 23, commentsCount = 2222), {}
+//    )
 }

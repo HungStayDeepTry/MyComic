@@ -2,8 +2,8 @@ package hung.deptrai.mycomic.feature.search.data.remote.datasource
 
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.data.dto.JsonResponse
-import hung.deptrai.mycomic.feature.search.data.remote.dto.author.AuthorDTO
+import hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO
 
 interface SearchAuthorDataSource {
-    suspend fun getAuthorByName(title: String) : ResultWrapper<JsonResponse<AuthorDTO>>
+    suspend fun getAuthorByName(title: String) : ResultWrapper<JsonResponse<hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO>>
 }

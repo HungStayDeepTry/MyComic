@@ -2,16 +2,16 @@ package hung.deptrai.mycomic.core.domain.mapper
 
 import android.util.Log
 import hung.deptrai.mycomic.core.domain.model.MangaEntity
-import hung.deptrai.mycomic.feature.search.data.remote.dto.Data
-import hung.deptrai.mycomic.feature.search.data.remote.dto.author.AuthorDTO
-import hung.deptrai.mycomic.feature.search.data.remote.dto.coverArt.CoverArtDTO
-import hung.deptrai.mycomic.feature.search.data.remote.dto.statistic.MangaStatisticDTO
+import hung.deptrai.mycomic.feature.search.data.dto.Data
+import hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO
+import hung.deptrai.mycomic.feature.search.data.dto.coverArt.CoverArtDTO
+import hung.deptrai.mycomic.feature.search.data.dto.statistic.MangaStatisticDTO
 
 fun mangaDTOtoMangaEntity(
-    data: Data,
-    coverArtDTO: CoverArtDTO,
-    authorDTO: List<AuthorDTO>,
-    statisticDTO: MangaStatisticDTO
+    data: hung.deptrai.mycomic.feature.search.data.dto.Data,
+    coverArtDTO: hung.deptrai.mycomic.feature.search.data.dto.coverArt.CoverArtDTO,
+    authorDTO: List<hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO>,
+    statisticDTO: hung.deptrai.mycomic.feature.search.data.dto.statistic.MangaStatisticDTO
 ): MangaEntity {
         val attr = data.attributes
 

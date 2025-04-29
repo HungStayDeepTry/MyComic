@@ -1,7 +1,7 @@
 package hung.deptrai.mycomic.core.network.author
 
 import hung.deptrai.mycomic.core.data.dto.JsonResponse
-import hung.deptrai.mycomic.feature.search.data.remote.dto.author.AuthorDTO
+import hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -11,5 +11,5 @@ interface SearchAuthorByTitleAPI {
     suspend fun getAuthorByTitle(
         @Query("name") name: String,
         @Query("limit") limit: Int = 15
-    ): Response<JsonResponse<AuthorDTO>>
+    ): Response<JsonResponse<hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO>>
 }

@@ -6,6 +6,7 @@ data class SearchComic(
     val description: String,
     val imageUrl: String,
     val status: String,
+    val tags: List<String>,
     val authors: List<String>?,        // Danh sách tác giả
     val coverArtUrl: String?,         // URL ảnh bìa
     val rating: Double?,              // Rating chung

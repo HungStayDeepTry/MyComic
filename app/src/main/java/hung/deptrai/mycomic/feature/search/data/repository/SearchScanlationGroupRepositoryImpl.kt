@@ -4,7 +4,7 @@ import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.domain.mapper.ScanlationGrouptoScanlationEntity
 import hung.deptrai.mycomic.core.domain.model.ScanlationGroupEntity
 import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchScanlationGroupDataSource
-import hung.deptrai.mycomic.feature.search.data.remote.dto.scanlationGroup.ScanlationGroupDTO
+import hung.deptrai.mycomic.feature.search.data.dto.scanlationGroup.ScanlationGroupDTO
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchScanlationGroupRepository
 import javax.inject.Inject
 
