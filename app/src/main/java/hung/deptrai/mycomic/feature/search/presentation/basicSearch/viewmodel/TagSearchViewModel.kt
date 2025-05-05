@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.feature.search.domain.usecase.SearchTagUseCase
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.Result
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.TagSearch
+import hung.deptrai.mycomic.feature.search.domain.model.TagSearch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

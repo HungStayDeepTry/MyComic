@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import hung.deptrai.mycomic.core.data.dto.DTOject
+import hung.deptrai.mycomic.feature.search.data.dto.tag.TagAttributesDTO
 import hung.deptrai.mycomic.feature.search.data.dto.tag.TagDTO
 import hung.deptrai.mycomic.feature.search.data.local.datasource.TagLocalDataSource
 import kotlinx.coroutines.flow.first
@@ -19,7 +21,7 @@ class TagLocalDataSourceImpl @Inject constructor(
     private val tagKey = stringPreferencesKey("tag_json")
     private val updatedKey = longPreferencesKey("tags_updated_at")
 
-    override suspend fun saveTags(tags: List<TagDTO>) {
+    override suspend fun saveTags(tags: List<DTOject<TagAttributesDTO>>) {
         val json = Json.encodeToString(tags)
         dataStore.edit {
             it[tagKey] = json
@@ -27,7 +29,7 @@ class TagLocalDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getTags(): List<TagDTO> {
+    override suspend fun getTags(): List<DTOject<TagAttributesDTO>> {
         val prefs = dataStore.data.first()
         val json = prefs[tagKey] ?: return emptyList()
         return Json.decodeFromString(json)

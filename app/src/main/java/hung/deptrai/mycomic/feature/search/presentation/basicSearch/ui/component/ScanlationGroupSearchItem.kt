@@ -34,8 +34,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import hung.deptrai.mycomic.R
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ScanlationGroupSearch
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.UserSearch
+import hung.deptrai.mycomic.feature.search.domain.model.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.domain.model.UserSearch
 
 @Composable
 fun ScanlationGroupSearchItem(

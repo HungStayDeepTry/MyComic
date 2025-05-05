@@ -4,7 +4,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.feature.search.domain.usecase.SearchScanlationGroupUseCase
 import hung.deptrai.mycomic.feature.search.domain.usecase.SearchUserUseCase
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.domain.model.ScanlationGroupSearch
 import javax.inject.Inject
 
 @HiltViewModel

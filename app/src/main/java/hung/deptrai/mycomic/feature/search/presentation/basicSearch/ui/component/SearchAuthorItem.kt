@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import hung.deptrai.mycomic.R
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.AuthorSearch
+import hung.deptrai.mycomic.feature.search.domain.model.AuthorSearch
 
 @Composable
 fun SearchAuthorItem(

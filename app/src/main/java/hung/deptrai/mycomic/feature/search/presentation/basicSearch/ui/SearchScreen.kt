@@ -47,11 +47,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hung.deptrai.mycomic.R
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.AuthorSearch
+import hung.deptrai.mycomic.feature.search.domain.model.AuthorSearch
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.Result
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ScanlationGroupSearch
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.SearchComic
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.TagSearch
+import hung.deptrai.mycomic.feature.search.domain.model.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
+import hung.deptrai.mycomic.feature.search.domain.model.TagSearch
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.MangaSearchResultItem
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.ScanlationGroupSearchItem
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.SearchAuthorItem

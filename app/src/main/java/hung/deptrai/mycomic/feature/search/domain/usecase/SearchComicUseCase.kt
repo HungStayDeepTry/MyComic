@@ -3,7 +3,7 @@ package hung.deptrai.mycomic.feature.search.domain.usecase
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.domain.model.MangaEntity
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchComicRepository
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.SearchComic
+import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
 import javax.inject.Inject
 
 class SearchComicUseCase @Inject constructor(

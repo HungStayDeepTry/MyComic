@@ -4,9 +4,9 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.AuthorSearch
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ScanlationGroupSearch
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.SearchComic
+import hung.deptrai.mycomic.feature.search.domain.model.AuthorSearch
+import hung.deptrai.mycomic.feature.search.domain.model.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.AuthorSearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.ComicSearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.ScanlationGroupSearchViewModel

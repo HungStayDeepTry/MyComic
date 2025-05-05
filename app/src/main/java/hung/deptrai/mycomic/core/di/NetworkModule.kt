@@ -3,8 +3,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import hung.deptrai.mycomic.core.network.author.SearchAuthorByIdAPI
-import hung.deptrai.mycomic.core.network.author.SearchAuthorByTitleAPI
+import hung.deptrai.mycomic.core.network.author.SearchAuthorAPI
 import hung.deptrai.mycomic.core.network.coverArt.CoverArtAPI
 import hung.deptrai.mycomic.core.network.scanlationGroup.SearchScanlationGroupAPI
 import hung.deptrai.mycomic.core.network.statistic.SearchStatisticsAPI
@@ -36,18 +35,13 @@ object NetworkModule {
     }
 
     @Provides
-    fun provideSearchAuthorByIdAPI(retrofit: Retrofit): SearchAuthorByIdAPI{
-        return retrofit.create(SearchAuthorByIdAPI::class.java)
+    fun provideSearchAuthorByIdAPI(retrofit: Retrofit): SearchAuthorAPI{
+        return retrofit.create(SearchAuthorAPI::class.java)
     }
 
     @Provides
     fun provideStatisticsSearchAPI(retrofit: Retrofit): SearchStatisticsAPI{
         return retrofit.create(SearchStatisticsAPI::class.java)
-    }
-
-    @Provides
-    fun provideSearchAuthorByTitleAPI(retrofit: Retrofit): SearchAuthorByTitleAPI{
-        return retrofit.create(SearchAuthorByTitleAPI::class.java)
     }
 
     @Provides

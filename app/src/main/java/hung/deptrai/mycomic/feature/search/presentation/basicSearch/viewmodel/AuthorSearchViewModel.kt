@@ -3,7 +3,7 @@ package hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.feature.search.domain.usecase.SearchAuthorUseCase
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.AuthorSearch
+import hung.deptrai.mycomic.feature.search.domain.model.AuthorSearch
 import javax.inject.Inject
 
 @HiltViewModel

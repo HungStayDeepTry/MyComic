@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import hung.deptrai.mycomic.R
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.Result
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.SearchComic
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.TagSearch
+import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
+import hung.deptrai.mycomic.feature.search.domain.model.TagSearch
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.util.getStatusColor
 
 @SuppressLint("DefaultLocale")
