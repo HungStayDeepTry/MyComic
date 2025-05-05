@@ -1,4 +1,4 @@
-package hung.deptrai.mycomic.feature.search.presentation.ui.util
+package hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.util
 
 import androidx.compose.ui.graphics.Color
 

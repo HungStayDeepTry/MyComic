@@ -10,6 +10,6 @@ interface SearchScanlationGroupAPI {
     @GET("group")
     suspend fun getScanlationGroupByTitle(
         @Query("name") name: String,
-        @Query("limit") limit: Int = 10
+        @Query("limit") limit: Int = 20
     ): Response<JsonResponse<ScanlationGroupDTO>>
 }

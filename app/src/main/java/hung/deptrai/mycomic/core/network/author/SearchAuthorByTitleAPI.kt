@@ -10,6 +10,6 @@ interface SearchAuthorByTitleAPI {
     @GET("author")
     suspend fun getAuthorByTitle(
         @Query("name") name: String,
-        @Query("limit") limit: Int = 15
+        @Query("limit") limit: Int = 20
     ): Response<JsonResponse<hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO>>
 }

@@ -3,7 +3,7 @@ package hung.deptrai.mycomic.feature.search.domain.usecase
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.domain.model.ScanlationGroupEntity
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchScanlationGroupRepository
-import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ScanlationGroupSearch
 import javax.inject.Inject
 
 class SearchScanlationGroupUseCase @Inject constructor(

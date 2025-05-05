@@ -7,5 +7,5 @@ import retrofit2.http.GET
 
 interface GetAllTagsAPI {
     @GET("/manga/tag")
-    fun getTags(): Response<JsonResponse<TagDTO>>
+    suspend fun getTags(): Response<JsonResponse<TagDTO>>
 }

@@ -1,4 +1,4 @@
-package hung.deptrai.mycomic.feature.search.presentation.ui
+package hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
@@ -47,18 +47,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hung.deptrai.mycomic.R
-import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
-import hung.deptrai.mycomic.feature.search.presentation.Result
-import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
-import hung.deptrai.mycomic.feature.search.presentation.SearchComic
-import hung.deptrai.mycomic.feature.search.presentation.TagSearch
-import hung.deptrai.mycomic.feature.search.presentation.ui.component.MangaSearchResultItem
-import hung.deptrai.mycomic.feature.search.presentation.ui.component.ScanlationGroupSearchItem
-import hung.deptrai.mycomic.feature.search.presentation.ui.component.SearchAuthorItem
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.SearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TagSearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TokenViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.UserSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.AuthorSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.Result
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.SearchComic
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.TagSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.MangaSearchResultItem
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.ScanlationGroupSearchItem
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.SearchAuthorItem
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.TagSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.TokenViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.UserSearchViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

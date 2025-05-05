@@ -4,19 +4,13 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import hung.deptrai.mycomic.feature.search.data.repository.SearchAuthorRepositoryImpl
-import hung.deptrai.mycomic.feature.search.data.repository.SearchComicRepositoryImpl
-import hung.deptrai.mycomic.feature.search.data.repository.SearchScanlationGroupRepositoryImpl
-import hung.deptrai.mycomic.feature.search.domain.repository.SearchAuthorRepository
-import hung.deptrai.mycomic.feature.search.domain.repository.SearchComicRepository
-import hung.deptrai.mycomic.feature.search.domain.repository.SearchScanlationGroupRepository
-import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
-import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
-import hung.deptrai.mycomic.feature.search.presentation.SearchComic
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.AuthorSearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ComicSearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ScanlationGroupSearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.SearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.AuthorSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.SearchComic
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.AuthorSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.ComicSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.ScanlationGroupSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchViewModel
 import javax.inject.Singleton
 
 @Module

@@ -1,4 +1,4 @@
-package hung.deptrai.mycomic.feature.search.presentation
+package hung.deptrai.mycomic.feature.search.presentation.basicSearch
 
 data class AuthorSearch(
     val id: String,

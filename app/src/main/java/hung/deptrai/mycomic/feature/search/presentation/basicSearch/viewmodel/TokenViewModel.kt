@@ -1,4 +1,4 @@
-package hung.deptrai.mycomic.feature.search.presentation.viewmodel
+package hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

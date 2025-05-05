@@ -1,10 +1,10 @@
-package hung.deptrai.mycomic.feature.search.presentation.viewmodel
+package hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.feature.search.domain.usecase.SearchScanlationGroupUseCase
 import hung.deptrai.mycomic.feature.search.domain.usecase.SearchUserUseCase
-import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ScanlationGroupSearch
 import javax.inject.Inject
 
 @HiltViewModel

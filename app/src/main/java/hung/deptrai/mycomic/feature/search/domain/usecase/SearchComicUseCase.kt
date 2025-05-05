@@ -2,10 +2,8 @@ package hung.deptrai.mycomic.feature.search.domain.usecase
 
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.domain.model.MangaEntity
-import hung.deptrai.mycomic.feature.search.data.dto.MangaDTO
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchComicRepository
-import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
-import hung.deptrai.mycomic.feature.search.presentation.SearchComic
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.SearchComic
 import javax.inject.Inject
 
 class SearchComicUseCase @Inject constructor(
@@ -21,7 +19,7 @@ class SearchComicUseCase @Inject constructor(
                 "https://uploads.mangadex.org/covers/${entity.id}/$fileName.256.jpg"
             } ?: ""
 
-            val tags: List<String> = (entity.genres.map { it.id } + entity.themes.map { it.id }).distinct()
+            val tags: List<String> = (entity.genres.map { it.id } + entity.themes.map { it.id } + entity.contents.map { it.id } + entity.formats.map { it.id }).distinct()
 
             SearchComic(
                 id = entity.id,
@@ -32,6 +30,7 @@ class SearchComicUseCase @Inject constructor(
                 authors = entity.authors.map { it.attributes.name ?: "" },
                 coverArtUrl = imageUrl,
                 tags = tags,
+                contentRating = entity.contentRating,
                 rating = entity.averageRating,
                 views = entity.follows,
                 chapters = entity.lastChapter?.toIntOrNull(),

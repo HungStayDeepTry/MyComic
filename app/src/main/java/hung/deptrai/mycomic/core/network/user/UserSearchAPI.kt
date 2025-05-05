@@ -14,5 +14,5 @@ interface UserSearchAPI {
     suspend fun getUsers(
         @Header("Authorization") bearerToken: String,
         @Query("ids[]") ids: List<String>
-    ): Response<JsonResponse<hung.deptrai.mycomic.feature.search.data.dto.user.UserDTO>>
+    ): Response<JsonResponse<UserDTO>>
 }

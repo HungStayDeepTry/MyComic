@@ -1,6 +1,5 @@
-package hung.deptrai.mycomic.feature.search.presentation.ui.component
+package hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component
 
-import android.graphics.Shader
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -36,8 +34,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import hung.deptrai.mycomic.R
-import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
-import hung.deptrai.mycomic.feature.search.presentation.UserSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.UserSearch
 
 @Composable
 fun ScanlationGroupSearchItem(

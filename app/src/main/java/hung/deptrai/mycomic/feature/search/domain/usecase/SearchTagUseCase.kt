@@ -3,7 +3,7 @@ package hung.deptrai.mycomic.feature.search.domain.usecase
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.domain.model.TagEntity
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchTagRepository
-import hung.deptrai.mycomic.feature.search.presentation.TagSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.TagSearch
 import javax.inject.Inject
 
 class SearchTagUseCase @Inject constructor(
@@ -36,7 +36,8 @@ class SearchTagUseCase @Inject constructor(
         val searchTags = tagEntities.map { en ->
             TagSearch(
                 id = en.id,
-                name = en.name["en"].toString()
+                name = en.name["en"].toString(),
+                group = en.group
             )
         }
         return searchTags

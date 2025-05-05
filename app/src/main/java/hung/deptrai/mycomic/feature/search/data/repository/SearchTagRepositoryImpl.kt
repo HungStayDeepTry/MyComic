@@ -1,6 +1,7 @@
 package hung.deptrai.mycomic.feature.search.data.repository
 
 import android.annotation.SuppressLint
+import android.util.Log
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.common.onSuccess
 import hung.deptrai.mycomic.core.domain.mapper.TagDTOtoTagEntity
@@ -18,7 +19,7 @@ class SearchTagRepositoryImpl @Inject constructor(
 ): SearchTagRepository{
     @SuppressLint("NewApi")
     override suspend fun getAllTags(): ResultWrapper<List<TagEntity>> {
-        val cachedTagDTOs = tagLocalDataSource.getTags() // Lấy list<TagDTO> từ local
+        var cachedTagDTOs = tagLocalDataSource.getTags() // Lấy list<TagDTO> từ local
         val lastFetchedMillis = tagLocalDataSource.getLastUpdatedTime()
         val now = Instant.now()
 
@@ -40,7 +41,9 @@ class SearchTagRepositoryImpl @Inject constructor(
                             tagLocalDataSource.saveTags(response.data)
                             // Lưu thời gian cập nhật cuối cùng
                             tagLocalDataSource.saveLastUpdatedTime(now.toEpochMilli())
+                            cachedTagDTOs = tagLocalDataSource.getTags()
                         } catch (e: Exception) {
+                            Log.e("Error in Tag Repo", "getAllTags: ${e.message}", )
                             return ResultWrapper.GenericError(error = "Failed to save data locally")
                         }
                     }

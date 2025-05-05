@@ -11,7 +11,7 @@ import javax.inject.Inject
 class SearchAuthorDataSourceImpl @Inject constructor(
     private val api: SearchAuthorByTitleAPI
 ) : SearchAuthorDataSource{
-    override suspend fun getAuthorByName(title: String): ResultWrapper<JsonResponse<hung.deptrai.mycomic.feature.search.data.dto.author.AuthorDTO>> {
+    override suspend fun getAuthorByName(title: String): ResultWrapper<JsonResponse<AuthorDTO>> {
         return safeApiCall {
             api.getAuthorByTitle(title)
         }

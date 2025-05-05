@@ -2,10 +2,8 @@ package hung.deptrai.mycomic.feature.search.domain.usecase
 
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.domain.model.AuthorEntity
-import hung.deptrai.mycomic.core.domain.model.ScanlationGroupEntity
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchAuthorRepository
-import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
-import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.AuthorSearch
 import javax.inject.Inject
 
 class SearchAuthorUseCase @Inject constructor(

@@ -19,6 +19,8 @@ data class MangaEntity(
     val artists: List<Relationship>,              // relationship.type == "artist"
     val genres: List<Tag>,                        // tag.attributes.group == "genre"
     val themes: List<Tag>,                        // tag.attributes.group == "theme"
+    val contents: List<Tag>,
+    val formats: List<Tag>,
     val contentRating: String?,
     val publicationDemographic: String?,
     val originalLanguage: String?,

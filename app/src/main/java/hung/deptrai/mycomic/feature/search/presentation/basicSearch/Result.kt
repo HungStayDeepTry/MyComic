@@ -1,4 +1,4 @@
-package hung.deptrai.mycomic.feature.search.presentation
+package hung.deptrai.mycomic.feature.search.presentation.basicSearch
 
 sealed class Result<out T> {
     data class Success<out T>(val data: T) : Result<T>()

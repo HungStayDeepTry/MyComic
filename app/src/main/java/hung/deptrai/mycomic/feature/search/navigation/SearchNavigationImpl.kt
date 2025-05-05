@@ -5,17 +5,13 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import hung.deptrai.mycomic.core.navigation.FeatureNavigation
-import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
-import hung.deptrai.mycomic.feature.search.presentation.ScanlationGroupSearch
-import hung.deptrai.mycomic.feature.search.presentation.SearchComic
-import hung.deptrai.mycomic.feature.search.presentation.ui.SearchScreen
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.AuthorSearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ComicSearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.ScanlationGroupSearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.SearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TagSearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.TokenViewModel
-import hung.deptrai.mycomic.feature.search.presentation.viewmodel.UserSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.SearchScreen
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.AuthorSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.ComicSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.ScanlationGroupSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.TagSearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.TokenViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.UserSearchViewModel
 import javax.inject.Inject
 
 class SearchNavigationImpl @Inject constructor() : FeatureNavigation{

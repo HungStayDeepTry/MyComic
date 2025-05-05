@@ -1,4 +1,4 @@
-package hung.deptrai.mycomic.feature.search.presentation.ui.component
+package hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import hung.deptrai.mycomic.R
-import hung.deptrai.mycomic.feature.search.presentation.AuthorSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.AuthorSearch
 
 @Composable
 fun SearchAuthorItem(

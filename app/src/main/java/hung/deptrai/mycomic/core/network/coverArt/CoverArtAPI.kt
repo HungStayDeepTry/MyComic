@@ -1,5 +1,6 @@
 package hung.deptrai.mycomic.core.network.coverArt
 
+import hung.deptrai.mycomic.core.data.dto.JsonResponse
 import hung.deptrai.mycomic.feature.search.data.dto.coverArt.CoverArtDTO
 import hung.deptrai.mycomic.feature.search.data.dto.coverArt.CoverArtResponse
 import retrofit2.Response
@@ -12,5 +13,5 @@ interface CoverArtAPI {
     @GET("cover")
     suspend fun getCoverArtById(
         @Query("ids[]") ids: List<String>
-    ): Response<hung.deptrai.mycomic.feature.search.data.dto.coverArt.CoverArtResponse>
+    ): Response<JsonResponse<CoverArtDTO>>
 }

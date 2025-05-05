@@ -1,12 +1,12 @@
-package hung.deptrai.mycomic.feature.search.presentation.viewmodel
+package hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.feature.search.domain.usecase.SearchUserUseCase
-import hung.deptrai.mycomic.feature.search.presentation.Result
-import hung.deptrai.mycomic.feature.search.presentation.UserSearch
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.Result
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.UserSearch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
