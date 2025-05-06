@@ -2,12 +2,19 @@ package hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import hung.deptrai.mycomic.feature.search.domain.SearchType
+import hung.deptrai.mycomic.feature.search.domain.usecase.SearchUseCase
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-abstract class SearchViewModel<T> :ViewModel(){
+@HiltViewModel
+class SearchViewModel @Inject constructor(
+    private val searchUseCase: SearchUseCase
+) : ViewModel(){
 //    private val _searchState = MutableStateFlow<Result<List<SearchComic>>>(Result.Loading)
 //    val searchState: StateFlow<Result<List<SearchComic>>> = _searchState
 //
@@ -34,7 +41,7 @@ abstract class SearchViewModel<T> :ViewModel(){
     protected val _searchState = MutableStateFlow<Result<List<T>>>(Result.Loading)
     val searchState: StateFlow<Result<List<T>>> = _searchState
 
-    fun search(title: String) {
+    fun search(title: String, type: SearchType) {
         viewModelScope.launch {
             _searchState.value = Result.Loading
             try {
@@ -50,5 +57,5 @@ abstract class SearchViewModel<T> :ViewModel(){
         }
     }
 
-    protected abstract suspend fun searchData(title: String): List<T>
+//    protected abstract suspend fun searchData(title: String): List<T>
 }
