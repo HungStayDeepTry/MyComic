@@ -35,6 +35,10 @@ class TagLocalDataSourceImpl @Inject constructor(
         return Json.decodeFromString(json)
     }
 
+    override suspend fun getTagsByIds(ids: List<String>): List<DTOject<TagAttributesDTO>> {
+        return getTags().filter { it.id in ids }
+    }
+
     override suspend fun getLastUpdatedTime(): Long {
         return dataStore.data.first()[updatedKey] ?: 0L
     }

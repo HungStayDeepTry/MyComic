@@ -8,7 +8,7 @@ data class Attributes(
     val createdAt: String,
     val description: hung.deptrai.mycomic.feature.search.data.dto.Description,
     val isLocked: Boolean,
-    val lastChapter: String,
+    val lastChapter: String?,
     val lastVolume: String,
     val latestUploadedChapter: String,
     val links: hung.deptrai.mycomic.feature.search.data.dto.Links,

@@ -4,9 +4,8 @@ data class SearchComic(
     val id: String,
     val title: String,
     val description: String,
-    val imageUrl: String,
     val status: String,
-    val tags: List<String>,
+//    val tags: List<String>,
     val authors: List<String>?,        // Danh sách tác giả
     val coverArtUrl: String?,
     val contentRating: String?,// URL ảnh bìa
@@ -16,5 +15,6 @@ data class SearchComic(
     val follows: Int? = null,         // Số lượt theo dõi
     val averageRating: Double? = null, // Điểm đánh giá trung bình
     val bayesianRating: Double? = null, // Điểm đánh giá bayesian
-    val commentsCount: Int? = null    // Số lượt bình luận
+    val commentsCount: Int? = null,
+    val tags: List<TagSearch>
 )

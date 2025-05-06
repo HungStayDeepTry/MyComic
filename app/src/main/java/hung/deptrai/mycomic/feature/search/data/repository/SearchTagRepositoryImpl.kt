@@ -4,21 +4,26 @@ import android.annotation.SuppressLint
 import android.util.Log
 import hung.deptrai.mycomic.core.common.ResultWrapper
 import hung.deptrai.mycomic.core.common.onSuccess
-import hung.deptrai.mycomic.core.domain.mapper.TagDTOtoTagEntity
-import hung.deptrai.mycomic.core.domain.model.TagEntity
+import hung.deptrai.mycomic.core.domain.exception.DataError
+//import hung.deptrai.mycomic.core.domain.mapper.TagDTOtoTagEntity
+import hung.deptrai.mycomic.core.domain.mapper.TagDTOtoTagSearch
+//import hung.deptrai.mycomic.core.domain.model.TagEntity
 import hung.deptrai.mycomic.feature.search.data.local.datasource.TagLocalDataSource
-import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchTagDataSource
+import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchComicDataSource
+//import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchTagDataSource
+import hung.deptrai.mycomic.feature.search.domain.model.TagSearch
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchTagRepository
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
+import hung.deptrai.mycomic.core.domain.wrapper.Result
 
 class SearchTagRepositoryImpl @Inject constructor(
-    private val searchTagDataSource: SearchTagDataSource,
+    private val searchComicDataSource: SearchComicDataSource,
     private val tagLocalDataSource: TagLocalDataSource
 ): SearchTagRepository{
     @SuppressLint("NewApi")
-    override suspend fun getAllTags(): ResultWrapper<List<TagEntity>> {
+    override suspend fun getTags(ids: List<String>): Result<List<TagSearch>, DataError.Network> {
         var cachedTagDTOs = tagLocalDataSource.getTags() // Lấy list<TagDTO> từ local
         val lastFetchedMillis = tagLocalDataSource.getLastUpdatedTime()
         val now = Instant.now()
@@ -33,36 +38,32 @@ class SearchTagRepositoryImpl @Inject constructor(
         return if (shouldFetch) {
             // Fetch dữ liệu từ API
             // Kiểm tra kết quả từ remote
-            return when (val remoteResult = searchTagDataSource.fetchAllTags()) {
-                is ResultWrapper.Success -> {
-                    remoteResult.onSuccess { response ->
+            return when (val remoteResult = searchComicDataSource.fetchAllTags()) {
+                is Result.Success -> {
+//                    remoteResult.onSuccess { response ->
                         try {
                             // Lưu dữ liệu vào local (datastore)
-                            tagLocalDataSource.saveTags(response.data)
+                            tagLocalDataSource.saveTags(remoteResult.data.data)
                             // Lưu thời gian cập nhật cuối cùng
                             tagLocalDataSource.saveLastUpdatedTime(now.toEpochMilli())
-                            cachedTagDTOs = tagLocalDataSource.getTags()
+                            cachedTagDTOs = tagLocalDataSource.getTagsByIds(ids)
                         } catch (e: Exception) {
                             Log.e("Error in Tag Repo", "getAllTags: ${e.message}", )
-                            return ResultWrapper.GenericError(error = "Failed to save data locally")
+//                            return Result.Error(remoteResult.)
                         }
-                    }
+//                    }
                     // Sau khi thành công, trả dữ liệu từ cache
-                    ResultWrapper.Success(cachedTagDTOs.map { TagDTOtoTagEntity(it) })
+                    Result.Success(cachedTagDTOs.map { TagDTOtoTagSearch(it) })
                 }
-                is ResultWrapper.GenericError -> {
+                is Result.Error -> {
                     // Nếu có lỗi từ API, trả về lỗi GenericError
-                    ResultWrapper.GenericError(code = remoteResult.code, error = remoteResult.error)
-                }
-                is ResultWrapper.NetworkError -> {
-                    // Nếu có lỗi mạng, trả về lỗi NetworkError
-                    ResultWrapper.NetworkError(exception = remoteResult.exception)
+                    Result.Error(remoteResult.error)
                 }
             }
         } else {
             // Nếu dữ liệu cache hợp lệ, trả trực tiếp từ cache
-            val tagEntities = cachedTagDTOs.map { TagDTOtoTagEntity(it) }
-            ResultWrapper.Success(tagEntities)
+            val tagEntities = cachedTagDTOs.map { TagDTOtoTagSearch(it) }
+            Result.Success(tagEntities)
         }
     }
 }

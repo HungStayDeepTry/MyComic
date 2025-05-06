@@ -1,34 +1,47 @@
 package hung.deptrai.mycomic.core.common
 
+import hung.deptrai.mycomic.core.domain.exception.DataError
+import hung.deptrai.mycomic.core.domain.wrapper.Result
+import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 
-suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): ResultWrapper<T> {
+suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): Result<T, DataError.Network> {
     return try {
         val response = apiCall()
 
-        // Kiểm tra mã trạng thái HTTP
         if (response.isSuccessful) {
-            // Thành công, trả về dữ liệu nếu có
             response.body()?.let {
-                ResultWrapper.Success(it)
-            } ?: ResultWrapper.GenericError(
-                code = response.code(),
-                error = "Empty response body"
-            )
+                Result.Success(it)
+            } ?: Result.Error(DataError.Network.UNKNOWN) // Body rỗng
         } else {
-            // Lỗi, trả về mã lỗi và thông báo lỗi chi tiết
-            val errorBody = response.errorBody()?.string() ?: "Unknown error"
-            ResultWrapper.GenericError(
-                code = response.code(),
-                error = errorBody
-            )
+            // Xử lý mã lỗi HTTP
+            Result.Error(mapHttpCodeToNetworkError(response.code()))
         }
     } catch (e: IOException) {
-        // Lỗi mạng
-        ResultWrapper.NetworkError(e)
+        Result.Error(DataError.Network.NO_INTERNET)
+    } catch (e: HttpException) {
+        Result.Error(mapHttpCodeToNetworkError(e.code()))
     } catch (e: Exception) {
-        // Lỗi chung
-        ResultWrapper.GenericError(error = e.localizedMessage)
+        Result.Error(DataError.Network.UNKNOWN)
     }
+}
+fun mapHttpCodeToNetworkError(code: Int): DataError.Network = when (code) {
+    400 -> DataError.Network.BAD_REQUEST
+    401 -> DataError.Network.UNAUTHORIZED
+    403 -> DataError.Network.FORBIDDEN
+    404 -> DataError.Network.NOT_FOUND
+    405 -> DataError.Network.METHOD_NOT_ALLOWED
+    408 -> DataError.Network.REQUEST_TIMEOUT
+    409 -> DataError.Network.CONFLICT
+    410 -> DataError.Network.GONE
+    411 -> DataError.Network.LENGTH_REQUIRED
+    413 -> DataError.Network.PAYLOAD_TOO_LARGE
+    415 -> DataError.Network.UNSUPPORTED_MEDIA_TYPE
+    429 -> DataError.Network.TOO_MANY_REQUESTS
+    500 -> DataError.Network.SERVER_ERROR
+    502 -> DataError.Network.BAD_GATEWAY
+    503 -> DataError.Network.SERVICE_UNAVAILABLE
+    504 -> DataError.Network.GATEWAY_TIMEOUT
+    else -> DataError.Network.UNKNOWN
 }

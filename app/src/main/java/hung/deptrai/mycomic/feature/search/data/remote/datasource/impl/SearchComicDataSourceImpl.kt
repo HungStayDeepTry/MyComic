@@ -13,6 +13,7 @@ import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchComicDat
 import hung.deptrai.mycomic.feature.search.data.dto.author.AuthorAttributes
 import hung.deptrai.mycomic.feature.search.data.dto.coverArt.CoverArtAttributes
 import hung.deptrai.mycomic.feature.search.data.dto.statistic.StatisticsResponse
+import hung.deptrai.mycomic.feature.search.data.dto.tag.TagAttributesDTO
 import javax.inject.Inject
 
 class SearchComicDataSourceImpl @Inject constructor(
@@ -35,5 +36,8 @@ class SearchComicDataSourceImpl @Inject constructor(
 
     override suspend fun getStatisticsByIds(mangaId: List<String>): ResultWrapper<StatisticsResponse> {
         return safeApiCall { api3.getStatisticsForManga(mangaId) }
+    }
+    override suspend fun fetchAllTags(): ResultWrapper<JsonResponse<DTOject<TagAttributesDTO>>> {
+        return safeApiCall { api.getTags() }
     }
 }

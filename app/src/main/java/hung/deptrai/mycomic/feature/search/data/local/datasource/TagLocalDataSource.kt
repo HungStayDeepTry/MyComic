@@ -7,6 +7,7 @@ import hung.deptrai.mycomic.feature.search.data.dto.tag.TagDTO
 interface TagLocalDataSource  {
     suspend fun saveTags(tags: List<DTOject<TagAttributesDTO>>)
     suspend fun getTags(): List<DTOject<TagAttributesDTO>>
+    suspend fun getTagsByIds(ids: List<String>): List<DTOject<TagAttributesDTO>>
     suspend fun getLastUpdatedTime(): Long
     suspend fun saveLastUpdatedTime(timestamp: Long)
 }

@@ -5,8 +5,9 @@ import hung.deptrai.mycomic.core.data.dto.DTOject
 import hung.deptrai.mycomic.core.data.dto.JsonFewestResponse
 import hung.deptrai.mycomic.core.data.dto.JsonResponse
 import hung.deptrai.mycomic.feature.search.data.dto.user.UserAttributesDTO
-import hung.deptrai.mycomic.feature.search.data.dto.user.UserDTO
+import hung.deptrai.mycomic.core.domain.exception.DataError
+import hung.deptrai.mycomic.core.domain.wrapper.Result
 
 interface SearchUserDataSource {
-    suspend fun getUserSearchById(token: String, ids: List<String>): ResultWrapper<JsonResponse<DTOject<UserAttributesDTO>>>
+    suspend fun getUserSearchById(token: String, ids: List<String>): Result<JsonResponse<DTOject<UserAttributesDTO>>, DataError.Network>
 }

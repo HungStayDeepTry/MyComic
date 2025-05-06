@@ -184,7 +184,9 @@ fun MangaSearchResultItem(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         if (tagState is Result.Success) {
-                            val matchedTags = tagState.data.filter { it.id in manga.tags }
+                            val matchedTags = tagState.data.filter { tag ->
+                                tag.id in manga.tags.map { it.id }
+                            }
 
                             // Sắp xếp tag theo ưu tiên và tên
                             val orderedTags = matchedTags.sortedWith(
