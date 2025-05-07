@@ -2,28 +2,31 @@ package hung.deptrai.mycomic.core.common
 
 import hung.deptrai.mycomic.core.domain.exception.DataError
 import hung.deptrai.mycomic.core.domain.wrapper.Result
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 
 suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): Result<T, DataError.Network> {
-    return try {
-        val response = apiCall()
+    return withContext(Dispatchers.IO) {
+        try {
+            val response = apiCall()
 
-        if (response.isSuccessful) {
-            response.body()?.let {
-                Result.Success(it)
-            } ?: Result.Error(DataError.Network.UNKNOWN) // Body rỗng
-        } else {
-            // Xử lý mã lỗi HTTP
-            Result.Error(mapHttpCodeToNetworkError(response.code()))
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Result.Success(it)
+                } ?: Result.Error(DataError.Network.UNKNOWN) // Body rỗng
+            } else {
+                Result.Error(mapHttpCodeToNetworkError(response.code()))
+            }
+        } catch (e: IOException) {
+            Result.Error(DataError.Network.NO_INTERNET)
+        } catch (e: HttpException) {
+            Result.Error(mapHttpCodeToNetworkError(e.code()))
+        } catch (e: Exception) {
+            Result.Error(DataError.Network.UNKNOWN)
         }
-    } catch (e: IOException) {
-        Result.Error(DataError.Network.NO_INTERNET)
-    } catch (e: HttpException) {
-        Result.Error(mapHttpCodeToNetworkError(e.code()))
-    } catch (e: Exception) {
-        Result.Error(DataError.Network.UNKNOWN)
     }
 }
 fun mapHttpCodeToNetworkError(code: Int): DataError.Network = when (code) {

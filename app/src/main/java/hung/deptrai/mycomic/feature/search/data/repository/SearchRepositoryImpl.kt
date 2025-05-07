@@ -1,14 +1,10 @@
 package hung.deptrai.mycomic.feature.search.data.repository
 
-import hung.deptrai.mycomic.core.common.ResultWrapper
-import hung.deptrai.mycomic.core.data.dto.DTOject
 import hung.deptrai.mycomic.core.domain.exception.DataError
+import hung.deptrai.mycomic.core.domain.exception.QueryError
 import hung.deptrai.mycomic.core.domain.mapper.AuthorDTOtoAuthorSearch
 import hung.deptrai.mycomic.core.domain.mapper.ScanlationGrouptoScanlationSearch
-import hung.deptrai.mycomic.core.domain.mapper.UserDTOtoUserSearch
 import hung.deptrai.mycomic.core.domain.mapper.mangaDTOtoMangaSearch
-import hung.deptrai.mycomic.feature.search.data.dto.author.AuthorAttributes
-import hung.deptrai.mycomic.feature.search.data.local.datasource.TagLocalDataSource
 import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchAuthorDataSource
 import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchComicDataSource
 import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchScanlationGroupDataSource
@@ -18,11 +14,12 @@ import hung.deptrai.mycomic.feature.search.domain.model.AuthorSearch
 import hung.deptrai.mycomic.feature.search.domain.model.ScanlationGroupSearch
 import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
 import hung.deptrai.mycomic.feature.search.domain.repository.SearchRepository
-import hung.deptrai.mycomic.feature.search.domain.repository.SearchTagRepository
 import hung.deptrai.mycomic.feature.search.domain.repository.TokenRepository
-import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import hung.deptrai.mycomic.core.domain.wrapper.Result
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.firstOrNull
 
 class SearchRepositoryImpl @Inject constructor(
@@ -30,10 +27,9 @@ class SearchRepositoryImpl @Inject constructor(
     private val searchComicDataSource: SearchComicDataSource,
     private val searchScanlationGroupDataSource: SearchScanlationGroupDataSource,
     private val tokenRepository: TokenRepository,
-    private val searchTagRepository: SearchTagRepository,
     private val userDataSource: SearchUserDataSource
 ) : SearchRepository{
-    override suspend fun searchByTitle(title: String, type: SearchType): Result<List<Any>, DataError.Network> {
+    override suspend fun searchByTitle(title: String, type: SearchType, isLoggedIn: Boolean): Result<List<Any>, DataError.Network> {
         return when(type){
             SearchType.SCANLATION_GROUP -> {
                 searchScanlationGroupByTitle(title)
@@ -44,8 +40,54 @@ class SearchRepositoryImpl @Inject constructor(
             SearchType.COMIC -> {
                 searchComicByTitle(title)
             }
+
+            SearchType.ALL -> {
+                searchAllByTitle(title, isLoggedIn)
+            }
         }
     }
+
+    private suspend fun searchAllByTitle(title: String, isLoggedIn: Boolean): Result<List<Any>, DataError.Network> = coroutineScope {
+        // Thực hiện các gọi API đồng thời
+        val scanlationGroupJob = async {
+            if (isLoggedIn) {
+                runCatching { searchScanlationGroupByTitle(title) }
+                    .getOrElse { Result.Error(DataError.Network.UNKNOWN) }
+            } else {
+                Result.Error(QueryError.USER_NOT_LOGGED_IN) // lỗi logic có thể bạn cần mapping lại
+            }
+        }
+
+        val authorJob = async {
+            runCatching { searchAuthorByTitle(title) }
+                .getOrElse { Result.Error(DataError.Network.UNKNOWN) }
+        }
+
+        val comicJob = async {
+            runCatching { searchComicByTitle(title) }
+                .getOrElse { Result.Error(DataError.Network.UNKNOWN) }
+        }
+
+        // Đợi tất cả kết quả và gom chúng lại
+        val results = awaitAll(scanlationGroupJob, authorJob, comicJob)
+
+        // Ghép kết quả lại thành một danh sách duy nhất, bạn có thể tùy chỉnh theo nhu cầu
+        val combinedResults = mutableListOf<Any>()
+        results.forEach { result ->
+            when (result) {
+                is Result.Success -> combinedResults.addAll(result.data)
+                is Result.Error -> {} // Không làm gì khi có lỗi
+            }
+        }
+
+        // Trả về kết quả
+        return@coroutineScope if (combinedResults.isNotEmpty()) {
+            Result.Success(combinedResults)
+        } else {
+            Result.Error(DataError.Network.UNKNOWN)
+        }
+    }
+
     private suspend fun searchScanlationGroupByTitle(
         title: String
     ): Result<List<ScanlationGroupSearch>, DataError.Network> {
@@ -111,9 +153,6 @@ class SearchRepositoryImpl @Inject constructor(
                     .distinct()
 
                 // B2: Lấy tag
-                val tagsResult = searchTagRepository.getTags(tagIds)
-                if (tagsResult is Result.Error) return Result.Error(tagsResult.error)
-                val tags = (tagsResult as Result.Success).data
 
                 // B3: Gọi 3 API song song
                 val authorRes = searchComicDataSource.getAuthorById(authorIds)
@@ -144,7 +183,7 @@ class SearchRepositoryImpl @Inject constructor(
                         val stat = statMap[dto.id]
 
                         if (coverArt != null && stat != null) {
-                            mangaDTOtoMangaSearch(dto, coverArt, authors, stat, tags)
+                            mangaDTOtoMangaSearch(dto, coverArt, authors, stat)
                         } else null
                     }
 

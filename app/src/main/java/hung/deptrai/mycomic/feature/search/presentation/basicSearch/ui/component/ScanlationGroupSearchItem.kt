@@ -39,8 +39,7 @@ import hung.deptrai.mycomic.feature.search.domain.model.UserSearch
 
 @Composable
 fun ScanlationGroupSearchItem(
-    scanlationGroupSearch: ScanlationGroupSearch,
-    userSearchs: List<UserSearch>
+    scanlationGroupSearch: ScanlationGroupSearch
 ) {
     val gradientGroupBanner = Brush.horizontalGradient(
         colors = listOf(
@@ -109,25 +108,13 @@ fun ScanlationGroupSearchItem(
                             overflow = TextOverflow.Ellipsis
                         )
                         Row {
-                            val leaderIds = scanlationGroupSearch.leaderName.orEmpty() // list id của leader
-                            val leaderNames = userSearchs
-                                .filter { it.id in leaderIds } // lọc ra những UserSearch có id nằm trong leaderName
-                                .map { it.name } // lấy tên của họ
-
+                            val leaderNames = scanlationGroupSearch.leaderName.orEmpty() // list id của leader
                             val hasMatchingLeader = leaderNames.isNotEmpty()
 
-                            Row {
-                                Text(
-                                    text = if (!hasMatchingLeader) "No leader" else "Leader: ",
-                                    color = Color.White
-                                )
-                                if (hasMatchingLeader) {
-                                    Text(
-                                        text = leaderNames.joinToString(", "), // ghép các tên thành chuỗi cách nhau bằng dấu ", "
-                                        color = Color.White
-                                    )
-                                }
-                            }
+                            Text(
+                                text = if (!hasMatchingLeader) "No leader" else "Leader: ${leaderNames.joinToString(", ")}",
+                                color = Color.White
+                            )
                         }
                     }
                 }

@@ -1,7 +1,7 @@
 package hung.deptrai.mycomic.core.domain.mapper
 
-import hung.deptrai.mycomic.core.data.dto.DTOject
-import hung.deptrai.mycomic.feature.search.data.dto.tag.TagAttributesDTO
+import hung.deptrai.mycomic.core.data.dto.wrapper.DTOject
+import hung.deptrai.mycomic.core.data.dto.tag.TagAttributesDTO
 import hung.deptrai.mycomic.feature.search.domain.model.TagSearch
 
 fun TagDTOtoTagSearch(

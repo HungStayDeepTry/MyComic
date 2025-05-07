@@ -36,7 +36,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import hung.deptrai.mycomic.R
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.Result
 import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
 import hung.deptrai.mycomic.feature.search.domain.model.TagSearch
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.util.getStatusColor
@@ -45,7 +44,7 @@ import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.util.getS
 @Composable
 fun MangaSearchResultItem(
     manga: SearchComic,
-    tagState: Result<List<TagSearch>>,
+//    tagState: Result<List<TagSearch>>,
     onItemClick: (String) -> Unit
 ) {
     Box(
@@ -183,54 +182,50 @@ fun MangaSearchResultItem(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        if (tagState is Result.Success) {
-                            val matchedTags = tagState.data.filter { tag ->
-                                tag.id in manga.tags.map { it.id }
+                        val matchedTags = manga.tags // không cần kiểm tra tagState nữa
+
+                        // Sắp xếp tag theo ưu tiên và tên
+                        val orderedTags = matchedTags.sortedWith(
+                            compareBy({ getTagPriority(it) }, { it.name })
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Content Rating tag trước tiên
+                            manga.contentRating?.let { rating ->
+                                val bgColor = getContentRatingBackgroundColor(rating)
+                                Text(
+                                    text = rating.replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = getContentRatingTextColor(rating),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(bgColor ?: MaterialTheme.colorScheme.surfaceVariant)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
                             }
 
-                            // Sắp xếp tag theo ưu tiên và tên
-                            val orderedTags = matchedTags.sortedWith(
-                                compareBy({ getTagPriority(it) }, { it.name })
-                            )
-
-                            Row(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Content Rating tag trước tiên
-                                manga.contentRating?.let { rating ->
-                                    val bgColor = getContentRatingBackgroundColor(rating)
-                                    Text(
-                                        text = rating.replaceFirstChar { it.uppercase() },
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = getContentRatingTextColor(rating),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(bgColor ?: MaterialTheme.colorScheme.surfaceVariant)
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
-
-                                // Sau đó là các tag
-                                orderedTags.forEach { tag ->
-                                    val bgColor = getTagBackgroundColor(tag)
-                                    Text(
-                                        text = tag.name,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = getTagTextColor(bgColor),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(bgColor ?: MaterialTheme.colorScheme.surfaceVariant)
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
+                            // Sau đó là các tag
+                            orderedTags.forEach { tag ->
+                                val bgColor = getTagBackgroundColor(tag)
+                                Text(
+                                    text = tag.name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = getTagTextColor(bgColor),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(bgColor ?: MaterialTheme.colorScheme.surfaceVariant)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
                             }
                         }
                     }

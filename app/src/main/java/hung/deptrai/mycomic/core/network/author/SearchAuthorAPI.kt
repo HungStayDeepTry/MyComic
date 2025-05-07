@@ -1,8 +1,8 @@
 package hung.deptrai.mycomic.core.network.author
 
-import hung.deptrai.mycomic.core.data.dto.DTOject
-import hung.deptrai.mycomic.core.data.dto.JsonResponse
-import hung.deptrai.mycomic.feature.search.data.dto.author.AuthorAttributes
+import hung.deptrai.mycomic.core.data.dto.wrapper.DTOject
+import hung.deptrai.mycomic.core.data.dto.wrapper.JsonResponse
+import hung.deptrai.mycomic.core.data.dto.author.AuthorAttributes
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

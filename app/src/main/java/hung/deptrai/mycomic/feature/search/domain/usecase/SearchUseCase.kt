@@ -1,6 +1,5 @@
 package hung.deptrai.mycomic.feature.search.domain.usecase
 
-import hung.deptrai.mycomic.core.domain.exception.DataError
 import hung.deptrai.mycomic.core.domain.exception.Error
 import hung.deptrai.mycomic.core.domain.exception.QueryError
 import hung.deptrai.mycomic.core.domain.wrapper.Result
@@ -15,9 +14,10 @@ class SearchUseCase @Inject constructor(
     private val tokenRepository: TokenRepository
 ) {
     suspend fun search(title: String, type: SearchType): Result<List<Any>, Error>{
-        if(type == SearchType.SCANLATION_GROUP && tokenRepository.readToken().first().isEmpty()){
+        val isLoggedIn = tokenRepository.readToken().first().isNotEmpty()
+        if(type == SearchType.SCANLATION_GROUP  && !isLoggedIn){
             return Result.Error(QueryError.USER_NOT_LOGGED_IN)
         }
-        return searchRepository.searchByTitle(title, type)
+        return searchRepository.searchByTitle(title, type, isLoggedIn)
     }
 }

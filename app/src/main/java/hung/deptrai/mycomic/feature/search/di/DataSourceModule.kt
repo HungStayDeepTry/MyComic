@@ -4,8 +4,6 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import hung.deptrai.mycomic.feature.search.data.local.datasource.TagLocalDataSource
-import hung.deptrai.mycomic.feature.search.data.local.datasource.impl.TagLocalDataSourceImpl
 import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchAuthorDataSource
 import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchComicDataSource
 import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchScanlationGroupDataSource
@@ -52,11 +50,6 @@ abstract class DataSourceModule {
         impl: TokenDatasourceImpl
     ) : TokenDatasource
 
-    @Binds
-    @Singleton
-    abstract fun bindTagLocalDataSource(
-        impl: TagLocalDataSourceImpl
-    ) : TagLocalDataSource
 
 //    @Binds
 //    @Singleton

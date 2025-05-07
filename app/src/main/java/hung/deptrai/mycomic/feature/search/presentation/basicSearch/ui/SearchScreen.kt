@@ -47,50 +47,45 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hung.deptrai.mycomic.R
+import hung.deptrai.mycomic.feature.search.domain.SearchType
 import hung.deptrai.mycomic.feature.search.domain.model.AuthorSearch
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.Result
 import hung.deptrai.mycomic.feature.search.domain.model.ScanlationGroupSearch
 import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
-import hung.deptrai.mycomic.feature.search.domain.model.TagSearch
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.MangaSearchResultItem
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.ScanlationGroupSearchItem
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.SearchAuthorItem
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchEvent
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.TagSearchViewModel
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.TokenViewModel
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.UserSearchViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(
-    comicViewModel: SearchViewModel<SearchComic>,
-    authorViewModel: SearchViewModel<AuthorSearch>,
-    scanlationGroupSearchViewModel: SearchViewModel<ScanlationGroupSearch>,
-    userSearchViewModel: UserSearchViewModel,
-    tokenViewModel: TokenViewModel,
-    tagViewModel: TagSearchViewModel
+    searchViewModel: SearchViewModel,
+    tokenViewModel: TokenViewModel
 ) {
-    val comicSearchState by comicViewModel.searchState.collectAsState()
-    val authorSearchState by authorViewModel.searchState.collectAsState()
-    val scanlationGroupSearchState by scanlationGroupSearchViewModel.searchState.collectAsState()
+    val comicSearchState by searchViewModel.comics.collectAsState()
+    val authorSearchState by searchViewModel.authors.collectAsState()
+    val scanlationGroupSearchState by searchViewModel.groups.collectAsState()
     val tokenState by tokenViewModel.tokenState.collectAsState()
-    val tagsState by tagViewModel.tagState.collectAsState()
+    val searchStatus by searchViewModel.events.collectAsState(initial = null)
 
     var textInput by rememberSaveable { mutableStateOf("") }
-    var query by rememberSaveable { mutableStateOf("") }
+    val textInput2 by searchViewModel.inputText.collectAsState()
+//    var query by rememberSaveable { mutableStateOf("") }
     val selectedTabIndex = rememberSaveable { mutableStateOf(0) }
+    var typeInput by rememberSaveable { mutableStateOf(SearchType.ALL) }
 
     // Debounce query sau 500ms
     LaunchedEffect(textInput) {
         delay(500)
-        query = textInput
+//        query = textInput
+
+//        searchViewModel.textChanged(textInput)
 
         // Chỉ khi query thực sự thay đổi sau delay mới search
-        comicViewModel.search(query)
-        tagViewModel.getTags()
-        authorViewModel.search(query)
-        scanlationGroupSearchViewModel.search(query)
+        searchViewModel.search(textInput2, typeInput)
         tokenViewModel.readToken()
     }
 
@@ -104,8 +99,8 @@ fun SearchScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                SearchBar(query = textInput, onQueryChange = {
-                    textInput = it
+                SearchBar(query = textInput2, onQueryChange = {
+                    searchViewModel.textChanged(it)
                 })
             }
 
@@ -117,16 +112,16 @@ fun SearchScreen(
             }
 
             item {
-                TabContent(
-                    comicSearchState = comicSearchState,
-                    authorSearchState = authorSearchState,
-                    scanlationGroupSearchState = scanlationGroupSearchState,
-                    tagState = tagsState,
-                    selectedTabIndex = selectedTabIndex.value,
-                    userSearchViewModel = userSearchViewModel,
-                    token = tokenState,
-                    query = query
-                )
+                searchStatus?.let {
+                    TabContent(
+                        comicSearchState = comicSearchState,
+                        authorSearchState = authorSearchState,
+                        scanlationGroupSearchState = scanlationGroupSearchState,
+                        selectedTabIndex = selectedTabIndex.value,
+                        token = tokenState,
+                        status = it
+                    )
+                }
             }
         }
     }
@@ -219,24 +214,15 @@ fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
 fun TabContent(
-    comicSearchState: Result<List<SearchComic>>,
-    authorSearchState: Result<List<AuthorSearch>>,
-    scanlationGroupSearchState: Result<List<ScanlationGroupSearch>>,
-    tagState: Result<List<TagSearch>>,
+    comicSearchState: List<SearchComic>,
+    authorSearchState: List<AuthorSearch>,
+    scanlationGroupSearchState: List<ScanlationGroupSearch>,
     token: String,
-    userSearchViewModel: UserSearchViewModel,
-    selectedTabIndex: Int,
-    query: String
+    status: SearchEvent,
+    selectedTabIndex: Int
 ) {
-    val currentState = when (selectedTabIndex) {
-        0, 1 -> comicSearchState // "All" và "Manga" cùng dùng comicSearchState
-        2 -> authorSearchState   // "Author" dùng authorSearchState
-        3 -> scanlationGroupSearchState // "Group" dùng scanlationGroupSearchState
-        else -> comicSearchState
-    }
-
-    when (currentState) {
-        is Result.Loading -> {
+    when (status) {
+        is SearchEvent.Loading -> {
             Column(
                 Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -246,8 +232,7 @@ fun TabContent(
             }
         }
 
-        is Result.Success -> {
-            val searchResults = currentState.data
+        is SearchEvent.Success -> {
             AnimatedContent(targetState = selectedTabIndex, label = "") {
                 when (selectedTabIndex) {
                     0, 1 -> { // Manga list
@@ -260,10 +245,9 @@ fun TabContent(
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(8.dp)
                             )
-                            searchResults.filterIsInstance<SearchComic>().forEach { comic ->
+                            comicSearchState.forEach { comic ->
                                 MangaSearchResultItem(
-                                    comic,
-                                    tagState
+                                    comic
                                 ) {}
                             }
                         }
@@ -279,23 +263,13 @@ fun TabContent(
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(8.dp)
                             )
-                            searchResults.filterIsInstance<AuthorSearch>().forEach { author ->
+                            authorSearchState.forEach { author ->
                                 SearchAuthorItem(author)
                             }
                         }
                     }
 
                     3 -> { // Group list
-                        val leaderIdsList = searchResults.filterIsInstance<ScanlationGroupSearch>()
-                        val leaderIds = leaderIdsList.flatMap { it.leaderName ?: emptyList() }
-                        val users = userSearchViewModel.searchState.collectAsState().value
-// Gửi yêu cầu lấy users
-                        LaunchedEffect(leaderIds) {
-                            if (leaderIds.isNotEmpty()) {
-                                userSearchViewModel.getUsers(token = token, ids = leaderIds)
-                            }
-                        }
-
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -305,22 +279,9 @@ fun TabContent(
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(8.dp)
                             )
-                            leaderIdsList.forEach { group ->
+                            scanlationGroupSearchState.forEach { group ->
                                 Column {
-//                                    Text(group.name)
-//
-                                    val matchedUsers = group.leaderName
-                                        ?.mapNotNull { leaderId ->
-                                            // Tìm user có id trùng với leaderId
-                                            (users as? Result.Success)?.data
-                                                ?.firstOrNull { it.id == leaderId }
-                                        }
-                                        ?: emptyList()
-//
-//                                    matchedUsers.forEach { user ->
-//                                        Text(text = user.name)
-//                                    }
-                                    ScanlationGroupSearchItem(group, matchedUsers)
+                                    ScanlationGroupSearchItem(group)
                                 }
                             }
                         }
@@ -329,8 +290,8 @@ fun TabContent(
             }
         }
 
-        is Result.Error -> {
-            val errorMessage = currentState.exception.message ?: "Unknown error"
+        is SearchEvent.Error -> {
+            val errorMessage = status.message.asString()
             Column(
                 Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -339,6 +300,8 @@ fun TabContent(
                 Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
             }
         }
+
+        SearchEvent.Empty -> TODO()
     }
 }
 

@@ -1,13 +1,12 @@
 package hung.deptrai.mycomic.feature.search.data.remote.datasource
 
-import hung.deptrai.mycomic.core.common.ResultWrapper
-import hung.deptrai.mycomic.core.data.dto.DTOject
-import hung.deptrai.mycomic.core.data.dto.JsonResponse
-import hung.deptrai.mycomic.feature.search.data.dto.Attributes
-import hung.deptrai.mycomic.feature.search.data.dto.author.AuthorAttributes
-import hung.deptrai.mycomic.feature.search.data.dto.coverArt.CoverArtAttributes
-import hung.deptrai.mycomic.feature.search.data.dto.statistic.StatisticsResponse
-import hung.deptrai.mycomic.feature.search.data.dto.tag.TagAttributesDTO
+import hung.deptrai.mycomic.core.data.dto.wrapper.DTOject
+import hung.deptrai.mycomic.core.data.dto.wrapper.JsonResponse
+import hung.deptrai.mycomic.core.data.dto.Attributes
+import hung.deptrai.mycomic.core.data.dto.author.AuthorAttributes
+import hung.deptrai.mycomic.core.data.dto.coverArt.CoverArtAttributes
+import hung.deptrai.mycomic.core.data.dto.statistic.StatisticsResponse
+import hung.deptrai.mycomic.core.data.dto.tag.TagAttributesDTO
 import hung.deptrai.mycomic.core.domain.exception.DataError
 import hung.deptrai.mycomic.core.domain.wrapper.Result
 
