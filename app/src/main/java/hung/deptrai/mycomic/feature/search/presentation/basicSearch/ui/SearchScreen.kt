@@ -70,23 +70,18 @@ fun SearchScreen(
     val scanlationGroupSearchState by searchViewModel.groups.collectAsState()
     val tokenState by tokenViewModel.tokenState.collectAsState()
     val searchStatus by searchViewModel.events.collectAsState(initial = null)
-
-    var textInput by rememberSaveable { mutableStateOf("") }
     val textInput2 by searchViewModel.inputText.collectAsState()
 //    var query by rememberSaveable { mutableStateOf("") }
     val selectedTabIndex = rememberSaveable { mutableStateOf(0) }
     var typeInput by rememberSaveable { mutableStateOf(SearchType.ALL) }
 
     // Debounce query sau 500ms
-    LaunchedEffect(textInput) {
+    LaunchedEffect(textInput2) {
         delay(500)
-//        query = textInput
-
-//        searchViewModel.textChanged(textInput)
 
         // Chỉ khi query thực sự thay đổi sau delay mới search
-        searchViewModel.search(textInput2, typeInput)
         tokenViewModel.readToken()
+        searchViewModel.search(textInput2, typeInput)
     }
 
     Scaffold { innerPadding ->
