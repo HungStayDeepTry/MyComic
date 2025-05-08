@@ -5,5 +5,5 @@ import hung.deptrai.mycomic.core.domain.exception.DataError
 import hung.deptrai.mycomic.core.domain.wrapper.Result
 
 interface SearchRepository {
-    suspend fun searchByTitle(title: String, type: SearchType, isLoggedIn: Boolean): Result<List<Any>, DataError.Network>
+    suspend fun searchByTitle(title: String, type: SearchType, isLoggedIn: Boolean): List<Result<List<Any>, DataError.Network>>
 }

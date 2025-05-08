@@ -5,4 +5,8 @@ sealed interface SearchEvent {
     object Empty : SearchEvent
     object Loading : SearchEvent
     object Success: SearchEvent
+
+    data class ErrorComic(val message: UiText) : SearchEvent
+    data class ErrorAuthor(val message: UiText) : SearchEvent
+    data class ErrorGroup(val message: UiText) : SearchEvent
 }

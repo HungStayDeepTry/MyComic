@@ -1,6 +1,7 @@
 package hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -88,6 +89,7 @@ fun SearchScreen(
         // Chỉ khi query thực sự thay đổi sau delay mới search
 //        tokenViewModel.readToken()
         searchViewModel.search(textInput2, typeInput)
+        Log.d("SearchScreen", "SearchScreen: comic : ${comicSearchState.size} || author : ${authorSearchState.size} || gr: ${scanlationGroupSearchState.size}")
     }
 
     val focusManager = LocalFocusManager.current
@@ -198,7 +200,8 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
 
                     if (query.isNotEmpty()) {
                         Box(
-                            Modifier.size(36.dp)
+                            Modifier
+                                .size(36.dp)
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(MaterialTheme.colorScheme.primary)
                                 .align(Alignment.BottomEnd),
@@ -359,6 +362,37 @@ fun TabContent(
         }
 
         SearchEvent.Empty -> TODO()
+        is SearchEvent.ErrorAuthor ->
+        {
+            val errorMessage = status.message.asString()
+            Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+            }
+        }
+        is SearchEvent.ErrorComic -> {
+            val errorMessage = status.message.asString()
+            Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+            }
+        }
+        is SearchEvent.ErrorGroup -> {
+            val errorMessage = status.message.asString()
+            Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+            }
+        }
     }
 }
 

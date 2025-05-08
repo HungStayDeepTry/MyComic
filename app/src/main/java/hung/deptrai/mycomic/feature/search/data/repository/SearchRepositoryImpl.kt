@@ -29,16 +29,16 @@ class SearchRepositoryImpl @Inject constructor(
     private val tokenRepository: TokenRepository,
     private val userDataSource: SearchUserDataSource
 ) : SearchRepository{
-    override suspend fun searchByTitle(title: String, type: SearchType, isLoggedIn: Boolean): Result<List<Any>, DataError.Network> {
+    override suspend fun searchByTitle(title: String, type: SearchType, isLoggedIn: Boolean): List<Result<List<Any>, DataError.Network>> {
         return when(type){
             SearchType.SCANLATION_GROUP -> {
-                searchScanlationGroupByTitle(title)
+                listOf( searchScanlationGroupByTitle(title))
             }
             SearchType.AUTHOR -> {
-                searchAuthorByTitle(title)
+                listOf(searchAuthorByTitle(title))
             }
             SearchType.COMIC -> {
-                searchComicByTitle(title)
+                listOf(searchComicByTitle(title))
             }
 
             SearchType.ALL -> {
@@ -47,7 +47,7 @@ class SearchRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun searchAllByTitle(title: String, isLoggedIn: Boolean): Result<List<Any>, DataError.Network> = coroutineScope {
+    private suspend fun searchAllByTitle(title: String, isLoggedIn: Boolean): List<Result<List<Any>, DataError.Network>> = coroutineScope {
         // Thực hiện các gọi API đồng thời
         val scanlationGroupJob = async {
 //            if (isLoggedIn) {
@@ -70,23 +70,23 @@ class SearchRepositoryImpl @Inject constructor(
         }
 
         // Đợi tất cả kết quả và gom chúng lại
-        val results = awaitAll(scanlationGroupJob, authorJob, comicJob)
+        return@coroutineScope awaitAll(scanlationGroupJob, authorJob, comicJob)
 
         // Ghép kết quả lại thành một danh sách duy nhất, bạn có thể tùy chỉnh theo nhu cầu
-        val combinedResults = mutableListOf<Any>()
-        results.forEach { result ->
-            when (result) {
-                is Result.Success -> combinedResults.addAll(result.data)
-                is Result.Error -> {} // Không làm gì khi có lỗi
-            }
-        }
-
-        // Trả về kết quả
-        return@coroutineScope if (combinedResults.isNotEmpty()) {
-            Result.Success(combinedResults)
-        } else {
-            Result.Error(DataError.Network.UNKNOWN)
-        }
+//        val combinedResults = mutableListOf<Any>()
+//        results.forEach { result ->
+//            when (result) {
+//                is Result.Success -> combinedResults.addAll(result.data)
+//                is Result.Error -> {} // Không làm gì khi có lỗi
+//            }
+//        }
+//
+//        // Trả về kết quả
+//        return@coroutineScope if (combinedResults.isNotEmpty()) {
+//            Result.Success(combinedResults)
+//        } else {
+//            Result.Error(DataError.Network.UNKNOWN)
+//        }
     }
 
     private suspend fun searchScanlationGroupByTitle(
