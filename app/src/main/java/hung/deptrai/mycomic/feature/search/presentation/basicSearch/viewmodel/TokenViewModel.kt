@@ -16,17 +16,17 @@ class TokenViewModel @Inject constructor(
     private val _tokenState = MutableStateFlow("")
     val tokenState: StateFlow<String> = _tokenState
 
-    fun saveToken(token: String) {
-        viewModelScope.launch {
-            tokenManageUserCase.saveToken(token)
-        }
-    }
-
-    fun readToken() {
-        viewModelScope.launch {
-            tokenManageUserCase.readToken().collect { token ->
-                _tokenState.value = token
-            }
-        }
-    }
+//    fun saveToken(token: String) {
+//        viewModelScope.launch {
+//            tokenManageUserCase.saveToken(token)
+//        }
+//    }
+//
+//    fun readToken() {
+//        viewModelScope.launch {
+//            tokenManageUserCase.readToken().collect { token ->
+//                _tokenState.value = token
+//            }
+//        }
+//    }
 }

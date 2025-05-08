@@ -10,10 +10,14 @@ import hung.deptrai.mycomic.feature.search.domain.model.AuthorSearch
 import hung.deptrai.mycomic.feature.search.domain.model.ScanlationGroupSearch
 import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
 import hung.deptrai.mycomic.feature.search.domain.usecase.SearchUseCase
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,6 +40,18 @@ class SearchViewModel @Inject constructor(
 
     val inputText = MutableStateFlow("")
 
+    @OptIn(FlowPreview::class)
+    val debouncedQuery = inputText
+        .debounce(500)
+        .filter { it.isNotBlank() }
+
+    init {
+        viewModelScope.launch {
+            debouncedQuery.collectLatest { query ->
+                search(query, type = SearchType.ALL) // currentSearchType là biến bạn quản lý
+            }
+        }
+    }
     fun textChanged(title: String){
         inputText.value = title
     }

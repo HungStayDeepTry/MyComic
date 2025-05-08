@@ -6,13 +6,17 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import hung.deptrai.mycomic.core.network.TokenApi
 import hung.deptrai.mycomic.feature.mock_login.TokenResponse
 import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
 
-class TokenRefreshWorker(
-    context: Context,
-    workerParams: WorkerParameters
+class TokenRefreshWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val tokenApi: TokenApi
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
@@ -23,11 +27,13 @@ class TokenRefreshWorker(
 
         if (timeRemaining <= 60_000) {
             try {
-                val response: TokenResponse = LoginApi.refreshToken(token.refreshToken)
-                TokenManager.saveToken(applicationContext, response)
+                val response: TokenResponse? = tokenApi.refreshAccessToken(token).body()
+                if (response!=null) {
+                    TokenManager.saveToken(applicationContext, response)
+                }
 
                 // 🔁 Lên lịch lại worker cho lần kế tiếp sau khi refresh thành công
-                schedule(applicationContext, response.expires_in * 1000L - 60_000L)
+                schedule(applicationContext, (response?.expires_in?.times(1000L) ?: 1000) - 60_000L)
 
                 return Result.success()
             } catch (e: Exception) {

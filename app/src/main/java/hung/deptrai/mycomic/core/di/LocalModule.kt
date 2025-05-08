@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,4 +23,11 @@ object LocalModule {
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences>{
         return context.dataStore
     }
+
+    @Provides
+    fun provideWorkManagerConfiguration(
+        workerFactory: HiltWorkerFactory
+    ): Configuration = Configuration.Builder()
+        .setWorkerFactory(workerFactory)
+        .build()
 }

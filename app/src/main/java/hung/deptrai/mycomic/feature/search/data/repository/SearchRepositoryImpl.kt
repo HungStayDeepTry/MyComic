@@ -106,7 +106,7 @@ class SearchRepositoryImpl @Inject constructor(
                 val token = tokenRepository.readToken().firstOrNull()
                     ?: return Result.Error(DataError.Network.UNAUTHORIZED)
 
-                when (val leadersResult = userDataSource.getUserSearchById(token, leaderIds)) {
+                when (val leadersResult = userDataSource.getUserSearchById(token.accessToken, leaderIds)) {
                     is Result.Success -> {
                         val users = leadersResult.data.data
                         val mapped = scanlationGroups.map {

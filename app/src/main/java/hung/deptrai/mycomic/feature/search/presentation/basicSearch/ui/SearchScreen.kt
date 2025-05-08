@@ -5,6 +5,9 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -39,7 +43,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -68,10 +77,8 @@ fun SearchScreen(
     val comicSearchState by searchViewModel.comics.collectAsState()
     val authorSearchState by searchViewModel.authors.collectAsState()
     val scanlationGroupSearchState by searchViewModel.groups.collectAsState()
-    val tokenState by tokenViewModel.tokenState.collectAsState()
     val searchStatus by searchViewModel.events.collectAsState(initial = null)
     val textInput2 by searchViewModel.inputText.collectAsState()
-//    var query by rememberSaveable { mutableStateOf("") }
     val selectedTabIndex = rememberSaveable { mutableStateOf(0) }
     var typeInput by rememberSaveable { mutableStateOf(SearchType.ALL) }
 
@@ -80,42 +87,54 @@ fun SearchScreen(
         delay(500)
 
         // Chỉ khi query thực sự thay đổi sau delay mới search
-        tokenViewModel.readToken()
+//        tokenViewModel.readToken()
         searchViewModel.search(textInput2, typeInput)
     }
 
+    val focusManager = LocalFocusManager.current
+
     Scaffold { innerPadding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 8.dp)
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {
+                    focusManager.clearFocus() // ✅ clear focus khi click ra ngoài
+                }
         ) {
-            item {
-                SearchBar(query = textInput2, onQueryChange = {
-                    searchViewModel.textChanged(it)
-                })
-            }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = 8.dp)
+                    .padding(innerPadding),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    SearchBar(query = textInput2, onQueryChange = {
+                        searchViewModel.textChanged(it)
+                    })
+                }
 
-            item {
-                SearchTabs(
-                    selectedTabIndex = selectedTabIndex.value,
-                    onTabSelected = { selectedTabIndex.value = it }
-                )
-            }
-
-            item {
-                searchStatus?.let {
-                    TabContent(
-                        comicSearchState = comicSearchState,
-                        authorSearchState = authorSearchState,
-                        scanlationGroupSearchState = scanlationGroupSearchState,
+                item {
+                    SearchTabs(
                         selectedTabIndex = selectedTabIndex.value,
-                        token = tokenState,
-                        status = it
+                        onTabSelected = { selectedTabIndex.value = it }
                     )
+                }
+
+                item {
+                    searchStatus?.let {
+                        TabContent(
+                            comicSearchState = comicSearchState,
+                            authorSearchState = authorSearchState,
+                            scanlationGroupSearchState = scanlationGroupSearchState,
+                            selectedTabIndex = selectedTabIndex.value,
+                            status = it
+                        )
+                    }
                 }
             }
         }
@@ -124,39 +143,82 @@ fun SearchScreen(
 
 @Composable
 fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+    var isFocused by remember { mutableStateOf(false) }
+
+    val focusRequester = remember { FocusRequester() }
+    val focusModifier = Modifier
+        .onFocusChanged {
+            isFocused = it.isFocused
+        }
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(38.dp)
             .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .border(
+                width = if (isFocused) 2.dp else 0.dp,
+                color = if (isFocused) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
         BasicTextField(
             value = query,
             onValueChange = onQueryChange,
-            modifier = Modifier.fillMaxSize(),
+            modifier = focusModifier
+                .fillMaxSize()
+                .focusRequester(focusRequester),
             singleLine = true,
             textStyle = TextStyle(fontSize = 14.sp, color = Color.Black),
             decorationBox = { innerTextField ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.search_ic),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    if (query.isEmpty()) {
-                        Text(
-                            text = "Search Manga",
-                            fontSize = 14.sp,
-                            color = Color.Gray
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(end = 8.dp) // chừa chỗ cho trailing icon
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.search_ic),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = Color.Gray
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        if (query.isEmpty()) {
+                            Text(
+                                text = "Search",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+
+                        innerTextField()
                     }
-                    innerTextField()
+
+                    if (query.isNotEmpty()) {
+                        Box(
+                            Modifier.size(36.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                                .align(Alignment.BottomEnd),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            IconButton(
+                                onClick = { onQueryChange("") },
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.baseline_close_24),
+                                    contentDescription = "Clear",
+                                    modifier = Modifier.size(24.dp),
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
                 }
             }
         )
@@ -178,30 +240,62 @@ fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
     }
 
     TabRow(
-        selectedTabIndex = selectedTabIndex,
-        indicator = { tabPositions ->
-            Box(
-                Modifier
-                    .tabIndicatorOffset(tabPositions[selectedTabIndex])
-                    .height(3.dp)
-                    .background(MaterialTheme.colorScheme.primary)
-            )
-        },
-        divider = {}, // Loại bỏ đường kẻ phân cách dưới TabRow
-        containerColor = MaterialTheme.colorScheme.surfaceVariant
+        selectedTabIndex = selectedTabIndex, // Loại bỏ đường kẻ phân cách dưới TabRow
+        containerColor = MaterialTheme.colorScheme.outlineVariant,
+        modifier = Modifier
+            .height(40.dp)
+            .clip(RoundedCornerShape(4.dp)),
+        contentColor = MaterialTheme.colorScheme.outlineVariant,
+        indicator = {}
     ) {
         listOf("All", "Manga", "Author", "Group").forEachIndexed { index, title ->
-            Tab(
-                selected = selectedTabIndex == index,
-                onClick = { onTabSelected(index) },
-                text = { Text(title) },
-                modifier = Modifier
-                    .offset(x = if (selectedTabIndex == index) offsetAnim.value.dp else 0.dp)
+            if(selectedTabIndex == index){
+                Tab(
+                    selected = true,
+                    onClick = { onTabSelected(index) },
+                    text = {
+                        Text(
+                            text = title,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    },
+                    modifier = Modifier
+                        .height(40.dp)
+                        .offset(x = offsetAnim.value.dp)
+                        .padding(3.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            MaterialTheme.colorScheme.scrim
+                        )
+                )
+            }
+            else {
+                Tab(
+                    selected = false,
+                    onClick = { onTabSelected(index) },
+                    text = {
+                        Text(
+                            text = title,
+                            color = MaterialTheme.colorScheme.outline,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    },
+                    modifier = Modifier
+                        .height(40.dp)
+                        .background(
+                            MaterialTheme.colorScheme.outlineVariant
+                        )
+                        .padding(3.dp)
+                        .clip(RoundedCornerShape(4.dp))
 //                    .background(
 //                        if (selectedTabIndex == index) Color.Blue
 //                        else Color.Transparent
 //                    )
-            )
+                )
+            }
         }
     }
 }
@@ -212,7 +306,7 @@ fun TabContent(
     comicSearchState: List<SearchComic>,
     authorSearchState: List<AuthorSearch>,
     scanlationGroupSearchState: List<ScanlationGroupSearch>,
-    token: String,
+//    token: String,
     status: SearchEvent,
     selectedTabIndex: Int
 ) {

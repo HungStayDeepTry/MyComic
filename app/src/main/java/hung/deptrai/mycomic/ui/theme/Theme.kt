@@ -46,7 +46,7 @@ private val DarkColorScheme = darkColorScheme(
 
     outline = Color(0xFF616161),
     outlineVariant = Color(0xFF424242),
-    scrim = Color(0xFF000000)
+    scrim = Color(0xFF808080)
 )
 
 
@@ -84,7 +84,7 @@ private val LightColorScheme = lightColorScheme(
     onErrorContainer = Color(0xFF000000),
 
     outline = Color(0xFF9E9E9E),
-    outlineVariant = Color(0xFFBDBDBD),
+    outlineVariant = Color(0xFFBDBDBE).copy(alpha = 0.2f),
     scrim = Color(0xFF000000)
 )
 
@@ -92,7 +92,7 @@ private val LightColorScheme = lightColorScheme(
 fun MyComicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

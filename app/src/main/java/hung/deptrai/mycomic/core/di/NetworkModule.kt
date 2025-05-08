@@ -3,6 +3,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import hung.deptrai.mycomic.core.network.TokenApi
 import hung.deptrai.mycomic.core.network.author.SearchAuthorAPI
 import hung.deptrai.mycomic.core.network.coverArt.CoverArtAPI
 import hung.deptrai.mycomic.core.network.scanlationGroup.SearchScanlationGroupAPI
@@ -51,5 +52,10 @@ object NetworkModule {
     @Provides
     fun provideSearchUserByIdAPI(retrofit: Retrofit): UserSearchAPI{
         return retrofit.create(UserSearchAPI::class.java)
+    }
+
+    @Provides
+    fun provideTokenAPI(retrofit: Retrofit): TokenApi{
+        return retrofit.create(TokenApi::class.java)
     }
 }
