@@ -84,7 +84,7 @@ private val LightColorScheme = lightColorScheme(
     onErrorContainer = Color(0xFF000000),
 
     outline = Color(0xFF9E9E9E),
-    outlineVariant = Color(0xFFBDBDBE).copy(alpha = 0.2f),
+    outlineVariant = Color(0xFFBDBDBE).copy(alpha = 0.3f),
     scrim = Color(0xFF000000)
 )
 

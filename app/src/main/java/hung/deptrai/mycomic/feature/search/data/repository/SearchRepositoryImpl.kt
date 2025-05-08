@@ -50,12 +50,13 @@ class SearchRepositoryImpl @Inject constructor(
     private suspend fun searchAllByTitle(title: String, isLoggedIn: Boolean): Result<List<Any>, DataError.Network> = coroutineScope {
         // Thực hiện các gọi API đồng thời
         val scanlationGroupJob = async {
-            if (isLoggedIn) {
+//            if (isLoggedIn) {
                 runCatching { searchScanlationGroupByTitle(title) }
                     .getOrElse { Result.Error(DataError.Network.UNKNOWN) }
-            } else {
-                Result.Error(QueryError.USER_NOT_LOGGED_IN) // lỗi logic có thể bạn cần mapping lại
-            }
+//            }
+//            else {
+//                Result.Error(QueryError.USER_NOT_LOGGED_IN) // lỗi logic có thể bạn cần mapping lại
+//            }
         }
 
         val authorJob = async {

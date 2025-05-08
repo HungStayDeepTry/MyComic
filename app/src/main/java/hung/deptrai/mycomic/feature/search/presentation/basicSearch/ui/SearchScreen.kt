@@ -63,16 +63,15 @@ import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.MangaSearchResultItem
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.ScanlationGroupSearchItem
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.SearchAuthorItem
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.SeeMoreButton
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchEvent
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchViewModel
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.TokenViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(
-    searchViewModel: SearchViewModel,
-    tokenViewModel: TokenViewModel
+    searchViewModel: SearchViewModel
 ) {
     val comicSearchState by searchViewModel.comics.collectAsState()
     val authorSearchState by searchViewModel.authors.collectAsState()
@@ -324,56 +323,25 @@ fun TabContent(
         is SearchEvent.Success -> {
             AnimatedContent(targetState = selectedTabIndex, label = "") {
                 when (selectedTabIndex) {
-                    0, 1 -> { // Manga list
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Manga",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                            comicSearchState.forEach { comic ->
-                                MangaSearchResultItem(
-                                    comic
-                                ) {}
-                            }
+                    0 -> {
+                        Column {
+                            MangaSection(comicSearchState)
+                            Spacer(Modifier.height(16.dp))
+                            AuthorSection(authorSearchState)
+                            Spacer(Modifier.height(16.dp))
+                            ScanlationGroupSection(scanlationGroupSearchState)
                         }
+                    }
+                    1 -> { // Manga list
+                        MangaSection(comicSearchState)
                     }
 
                     2 -> { // Author list
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Author",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                            authorSearchState.forEach { author ->
-                                SearchAuthorItem(author)
-                            }
-                        }
+                        AuthorSection(authorSearchState)
                     }
 
                     3 -> { // Group list
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Group",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                            scanlationGroupSearchState.forEach { group ->
-                                Column {
-                                    ScanlationGroupSearchItem(group)
-                                }
-                            }
-                        }
+                        ScanlationGroupSection(scanlationGroupSearchState)
                     }
                 }
             }
@@ -391,6 +359,64 @@ fun TabContent(
         }
 
         SearchEvent.Empty -> TODO()
+    }
+}
+
+@Composable
+private fun ScanlationGroupSection(scanlationGroupSearchState: List<ScanlationGroupSearch>) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Group",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(8.dp)
+        )
+        scanlationGroupSearchState.forEach { group ->
+            Column {
+                ScanlationGroupSearchItem(group)
+            }
+        }
+        SeeMoreButton(SearchType.SCANLATION_GROUP)
+    }
+}
+
+@Composable
+private fun AuthorSection(authorSearchState: List<AuthorSearch>) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Author",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(8.dp)
+        )
+        authorSearchState.forEach { author ->
+            SearchAuthorItem(author)
+        }
+        SeeMoreButton(SearchType.AUTHOR)
+    }
+}
+
+@Composable
+private fun MangaSection(comicSearchState: List<SearchComic>) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Manga",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(8.dp)
+        )
+        comicSearchState.forEach { comic ->
+            MangaSearchResultItem(
+                comic
+            ) {}
+        }
+        SeeMoreButton(SearchType.COMIC)
     }
 }
 
