@@ -1,10 +1,10 @@
 package hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel
 
 import android.annotation.SuppressLint
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import hung.deptrai.mycomic.R
 import hung.deptrai.mycomic.core.domain.wrapper.Result
 import hung.deptrai.mycomic.feature.search.domain.SearchType
 import hung.deptrai.mycomic.feature.search.domain.model.AuthorSearch
@@ -18,10 +18,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchUseCase: SearchUseCase
@@ -39,31 +40,37 @@ class SearchViewModel @Inject constructor(
     private val eventChannel = MutableSharedFlow<SearchEvent>()
     val events = eventChannel.asSharedFlow()
 
-    private val eventChannel1 = MutableSharedFlow<SearchEvent>()
-    val events1 = eventChannel1.asSharedFlow()
 
-    private val eventChannel2 = MutableSharedFlow<SearchEvent>()
-    val events2 = eventChannel2.asSharedFlow()
+    private val _errorEvent = MutableSharedFlow<SearchEvent>()
+    val errorEvent = _errorEvent.asSharedFlow()
 
-    private val eventChannel3 = MutableSharedFlow<SearchEvent>()
-    val events3 = eventChannel3.asSharedFlow()
+    private val _hasReload = MutableStateFlow(true)
+    private val _hasEmpty = MutableStateFlow(false)
 
     val inputText = MutableStateFlow("")
+    private val _typeInput = mutableStateOf(SearchType.ALL)
 
-//    @OptIn(FlowPreview::class)
-//    val debouncedQuery = inputText
-//        .debounce(500)
-//        .filter { it.isNotBlank() }
-//
-//    init {
-//        viewModelScope.launch {
-//            debouncedQuery.collectLatest { query ->
-//                search(query, type = SearchType.ALL) // currentSearchType là biến bạn quản lý
-//            }
-//        }
-//    }
-    fun textChanged(title: String){
+    init {
+        // Lắng nghe inputText thay đổi và debounce 500ms
+        viewModelScope.launch {
+            inputText
+                .debounce(500)
+                .distinctUntilChanged()
+                .collectLatest { query ->
+                    if (query.isNotBlank()) {
+                        search(query, _typeInput.value)
+                    }
+                }
+        }
+    }
+
+    fun setTypeInput(type: SearchType) {
+        _typeInput.value = type
+    }
+
+    fun textChanged(title: String) {
         inputText.value = title
+        _hasReload.value = true
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -73,74 +80,113 @@ class SearchViewModel @Inject constructor(
             if (text.isEmpty()) {
                 eventChannel.emit(SearchEvent.Error(PresentationError.EmptyInput.asUiText()))
             } else {
-                eventChannel.emit(SearchEvent.Loading) // ✅ Gửi trạng thái Loading
+                if(!_hasReload.value){
+                    if(_hasEmpty.value){
+                        eventChannel.emit(SearchEvent.Error(PresentationError.EmptyList.asUiText()))
+                    } else{
+                        eventChannel.emit(SearchEvent.Success)
+                    }
+                } else {
+                    eventChannel.emit(SearchEvent.Loading)
 
-                val result = searchUseCase.search(title, type)
-                    result.forEach {
-                        when(it){
-                            is Result.Success -> {
-                                val data = it.data
+                    val result = searchUseCase.search(title, type)
 
-                                val comicList = data.filterIsInstance<SearchComic>()
-                                val authorList = data.filterIsInstance<AuthorSearch>()
-                                val groupList = data.filterIsInstance<ScanlationGroupSearch>()
+                    if (type == SearchType.ALL) {
+                        val comicsTemp = mutableListOf<SearchComic>()
+                        val authorsTemp = mutableListOf<AuthorSearch>()
+                        val groupsTemp = mutableListOf<ScanlationGroupSearch>()
 
-                                when (type) {
-                                    SearchType.COMIC -> {
-                                        _comics.value = comicList
-                                        if (comicList.isEmpty()) {
-                                            eventChannel.emit(SearchEvent.Empty)
-                                        } else {
-                                            eventChannel.emit(SearchEvent.Success)
-                                        }
-                                    }
+                        var hasError = 0
+                        var errorMessage: UiText? = null
 
-                                    SearchType.AUTHOR -> {
-                                        _authors.value = authorList
-                                        if (comicList.isEmpty()) {
-                                            eventChannel.emit(SearchEvent.Empty)
-                                        } else {
-                                            eventChannel.emit(SearchEvent.Success)
-                                        }
-                                    }
+                        result.forEach {
+                            when (it) {
+                                is Result.Success -> {
+                                    comicsTemp += it.data.filterIsInstance<SearchComic>()
+                                    authorsTemp += it.data.filterIsInstance<AuthorSearch>()
+                                    groupsTemp += it.data.filterIsInstance<ScanlationGroupSearch>()
+                                }
 
-                                    SearchType.SCANLATION_GROUP -> {
-                                        _groups.value = groupList
-                                        if (comicList.isEmpty()) {
-                                            eventChannel.emit(SearchEvent.Empty)
-                                        } else {
-                                            eventChannel.emit(SearchEvent.Success)
-                                        }
-                                    }
-
-                                    SearchType.ALL -> {
-                                        _comics.value = comicList
-                                        _authors.value = authorList
-                                        _groups.value = groupList
-
-                                        if (comicList.isEmpty() && authorList.isEmpty() && groupList.isEmpty()) {
-                                            eventChannel.emit(SearchEvent.Empty)
-                                        } else {
-                                            eventChannel.emit(SearchEvent.Success)
-                                        }
-                                    }
+                                is Result.Error -> {
+                                    hasError += 1
+                                    errorMessage = it.error.asUiText()
                                 }
                             }
+                        }
 
-                            is Result.Error -> {
-                                val message = it.error.asUiText()
-                                val errorEvent = when (type) {
-                                    SearchType.COMIC -> SearchEvent.ErrorComic(message)
-                                    SearchType.AUTHOR -> SearchEvent.ErrorAuthor(message)
-                                    SearchType.SCANLATION_GROUP -> SearchEvent.ErrorGroup(message)
-                                    SearchType.ALL -> SearchEvent.Error(message)
+                        _comics.value = comicsTemp
+                        _authors.value = authorsTemp
+                        _groups.value = groupsTemp
+
+                        if (comicsTemp.isEmpty() && authorsTemp.isEmpty() && groupsTemp.isEmpty()) {
+                            eventChannel.emit(SearchEvent.Error(PresentationError.EmptyList.asUiText()))
+                            _errorEvent.emit(SearchEvent.Error(errorMessage!!))
+                            _hasEmpty.value = true
+                        } else if (hasError == 3) {
+                            eventChannel.emit(SearchEvent.Error(errorMessage!!))
+                            _hasEmpty.value = true
+                        } else {
+                            _hasEmpty.value = false
+                            eventChannel.emit(SearchEvent.Success)
+                        }
+                        _hasReload.value = false
+                    } else {
+                        // Không phải SearchType.ALL, giữ nguyên xử lý hiện tại
+                        result.forEach {
+                            when (it) {
+                                is Result.Success -> {
+                                    val data = it.data
+
+                                    val comicList = data.filterIsInstance<SearchComic>()
+                                    val authorList = data.filterIsInstance<AuthorSearch>()
+                                    val groupList = data.filterIsInstance<ScanlationGroupSearch>()
+
+                                    when (type) {
+                                        SearchType.COMIC -> {
+                                            _comics.value = comicList
+                                            emitResultOrEmpty(comicList)
+                                        }
+
+                                        SearchType.AUTHOR -> {
+                                            _authors.value = authorList
+                                            emitResultOrEmpty(authorList)
+                                        }
+
+                                        SearchType.GROUP -> {
+                                            _groups.value = groupList
+                                            emitResultOrEmpty(groupList)
+                                        }
+
+                                        else -> Unit
+                                    }
                                 }
-                                eventChannel.emit(errorEvent)
+
+                                is Result.Error -> {
+                                    val message = it.error.asUiText()
+                                    val errorEvent = when (type) {
+                                        SearchType.COMIC -> SearchEvent.ErrorComic(message)
+                                        SearchType.AUTHOR -> SearchEvent.ErrorAuthor(message)
+                                        SearchType.GROUP -> SearchEvent.ErrorGroup(
+                                            message
+                                        )
+
+                                        else -> SearchEvent.Error(message)
+                                    }
+                                    eventChannel.emit(errorEvent)
+                                }
                             }
                         }
                     }
-//                }
+                }
             }
+        }
+    }
+
+    private suspend fun <T> emitResultOrEmpty(list: List<T>) {
+        if (list.isEmpty()) {
+            eventChannel.emit(SearchEvent.Error(PresentationError.EmptyList.asUiText()))
+        } else {
+            eventChannel.emit(SearchEvent.Success)
         }
     }
 }

@@ -1,7 +1,6 @@
 package hung.deptrai.mycomic.feature.search.data.repository
 
 import hung.deptrai.mycomic.core.domain.exception.DataError
-import hung.deptrai.mycomic.core.domain.exception.QueryError
 import hung.deptrai.mycomic.core.domain.mapper.AuthorDTOtoAuthorSearch
 import hung.deptrai.mycomic.core.domain.mapper.ScanlationGrouptoScanlationSearch
 import hung.deptrai.mycomic.core.domain.mapper.mangaDTOtoMangaSearch
@@ -31,7 +30,7 @@ class SearchRepositoryImpl @Inject constructor(
 ) : SearchRepository{
     override suspend fun searchByTitle(title: String, type: SearchType, isLoggedIn: Boolean): List<Result<List<Any>, DataError.Network>> {
         return when(type){
-            SearchType.SCANLATION_GROUP -> {
+            SearchType.GROUP -> {
                 listOf( searchScanlationGroupByTitle(title))
             }
             SearchType.AUTHOR -> {
@@ -42,12 +41,12 @@ class SearchRepositoryImpl @Inject constructor(
             }
 
             SearchType.ALL -> {
-                searchAllByTitle(title, isLoggedIn)
+                searchAllByTitle(title)
             }
         }
     }
 
-    private suspend fun searchAllByTitle(title: String, isLoggedIn: Boolean): List<Result<List<Any>, DataError.Network>> = coroutineScope {
+    private suspend fun searchAllByTitle(title: String): List<Result<List<Any>, DataError.Network>> = coroutineScope {
         // Thực hiện các gọi API đồng thời
         val scanlationGroupJob = async {
 //            if (isLoggedIn) {
@@ -95,7 +94,7 @@ class SearchRepositoryImpl @Inject constructor(
 
         return when (val response = searchScanlationGroupDataSource.getScanlationGroupByTitle(title)) {
             is Result.Success -> {
-                val scanlationGroups = response.data?.data.orEmpty()
+                val scanlationGroups = response.data.data
 
                 val leaderIds = scanlationGroups
                     .flatMap { dto ->
@@ -139,7 +138,7 @@ class SearchRepositoryImpl @Inject constructor(
         // B1: Gọi API lấy danh sách manga theo title
         return when (val response = searchComicDataSource.getMangaByTitle(title)) {
             is Result.Success -> {
-                val mangaDtoList = response.data?.data.orEmpty()
+                val mangaDtoList = response.data.data
                 if (mangaDtoList.isEmpty()) return Result.Success(emptyList())
 
                 val mangaIds = mangaDtoList.map { it.id }
@@ -148,9 +147,6 @@ class SearchRepositoryImpl @Inject constructor(
                     .distinct()
                 val coverArtIds = mangaDtoList
                     .flatMap { it.relationships.filter { it.type == "cover_art" }.map { it.id } }
-                    .distinct()
-                val tagIds = mangaDtoList
-                    .flatMap { it.attributes.tags.filter { it.type == "tag" }.map { it.id } }
                     .distinct()
 
                 // B2: Lấy tag
@@ -164,8 +160,7 @@ class SearchRepositoryImpl @Inject constructor(
                 if (
                     authorRes is Result.Success &&
                     coverArtRes is Result.Success &&
-                    statRes is Result.Success &&
-                    statRes.data.statistics != null
+                    statRes is Result.Success
                 ) {
                     val authorMap = authorRes.data.data.associateBy { it.id }
                     val coverArtMap = coverArtRes.data.data.associateBy { it.id }

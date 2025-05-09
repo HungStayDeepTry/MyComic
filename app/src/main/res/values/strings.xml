@@ -33,4 +33,5 @@
     <string name="gateway_timeout">Gateway timeout</string>
     <string name="not_logged_in">Please login to continue!</string>
     <string name="error_empty_search">Let\'s input something!</string>
+    <string name="empty_list">No results found.</string>
 </resources>

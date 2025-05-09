@@ -1,7 +1,7 @@
 package hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui
 
 import android.annotation.SuppressLint
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -31,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +48,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -67,29 +67,32 @@ import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.SeeMoreButton
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchEvent
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(
     searchViewModel: SearchViewModel
 ) {
+    val context = LocalContext.current
     val comicSearchState by searchViewModel.comics.collectAsState()
     val authorSearchState by searchViewModel.authors.collectAsState()
     val scanlationGroupSearchState by searchViewModel.groups.collectAsState()
     val searchStatus by searchViewModel.events.collectAsState(initial = null)
+    val errorEvents by searchViewModel.errorEvent.collectAsState(initial = null)
     val textInput2 by searchViewModel.inputText.collectAsState()
     val selectedTabIndex = rememberSaveable { mutableStateOf(0) }
-    var typeInput by rememberSaveable { mutableStateOf(SearchType.ALL) }
-
-    // Debounce query sau 500ms
-    LaunchedEffect(textInput2) {
-        delay(500)
-
-        // Chỉ khi query thực sự thay đổi sau delay mới search
-//        tokenViewModel.readToken()
-        searchViewModel.search(textInput2, typeInput)
-        Log.d("SearchScreen", "SearchScreen: comic : ${comicSearchState.size} || author : ${authorSearchState.size} || gr: ${scanlationGroupSearchState.size}")
+    val errorMessage = when (errorEvents) {
+        is SearchEvent.Error -> (errorEvents as SearchEvent.Error).message.asString()
+        is SearchEvent.ErrorAuthor -> "Author error"
+        is SearchEvent.ErrorComic -> "Comic error"
+        is SearchEvent.ErrorGroup -> "Group error"
+        else -> null
+    }
+    LaunchedEffect(errorEvents) {
+        if (errorMessage != null) {
+            // xử lý thông báo lỗi, ví dụ: hiển thị snackbar
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 
     val focusManager = LocalFocusManager.current
@@ -122,7 +125,8 @@ fun SearchScreen(
                 item {
                     SearchTabs(
                         selectedTabIndex = selectedTabIndex.value,
-                        onTabSelected = { selectedTabIndex.value = it }
+                        onTabSelected = { selectedTabIndex.value = it },
+                        searchViewModel = searchViewModel
                     )
                 }
 
@@ -208,7 +212,9 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
                             contentAlignment = Alignment.Center
                         ) {
                             IconButton(
-                                onClick = { onQueryChange("") },
+                                onClick = {
+                                    onQueryChange("")
+                                },
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)
                             ) {
@@ -228,9 +234,14 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
 }
 
 @Composable
-fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
+fun SearchTabs(
+    selectedTabIndex: Int,
+    onTabSelected: (Int) -> Unit,
+    searchViewModel: SearchViewModel
+) {
     val offsetAnim = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
+    val textInput2 by searchViewModel.inputText.collectAsState()
 
     LaunchedEffect(selectedTabIndex) {
         offsetAnim.snapTo(0f)
@@ -246,18 +257,31 @@ fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
         containerColor = MaterialTheme.colorScheme.outlineVariant,
         modifier = Modifier
             .height(40.dp)
-            .clip(RoundedCornerShape(4.dp)),
+            .clip(RoundedCornerShape(4.dp))
+            .clickable {
+//                searchViewModel.search(textInput2, type)
+            },
         contentColor = MaterialTheme.colorScheme.outlineVariant,
         indicator = {}
     ) {
-        listOf("All", "Manga", "Author", "Group").forEachIndexed { index, title ->
-            if(selectedTabIndex == index){
+        listOf(
+            SearchType.ALL,
+            SearchType.COMIC,
+            SearchType.AUTHOR,
+            SearchType.GROUP
+        ).forEachIndexed { index, title ->
+            if (selectedTabIndex == index) {
+                searchViewModel.setTypeInput(title)
+//                searchViewModel.search(textInput2, title)
                 Tab(
                     selected = true,
-                    onClick = { onTabSelected(index) },
+                    onClick = {
+                        onTabSelected(index)
+//                        searchViewModel.search(textInput2, title)
+                    },
                     text = {
                         Text(
-                            text = title,
+                            text = title.toString(),
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.labelLarge
@@ -272,14 +296,16 @@ fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
                             MaterialTheme.colorScheme.scrim
                         )
                 )
-            }
-            else {
+            } else {
                 Tab(
                     selected = false,
-                    onClick = { onTabSelected(index) },
+                    onClick = {
+                        onTabSelected(index)
+                        searchViewModel.search(textInput2, title)
+                    },
                     text = {
                         Text(
-                            text = title,
+                            text = title.toString(),
                             color = MaterialTheme.colorScheme.outline,
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.labelLarge
@@ -292,10 +318,6 @@ fun SearchTabs(selectedTabIndex: Int, onTabSelected: (Int) -> Unit) {
                         )
                         .padding(3.dp)
                         .clip(RoundedCornerShape(4.dp))
-//                    .background(
-//                        if (selectedTabIndex == index) Color.Blue
-//                        else Color.Transparent
-//                    )
                 )
             }
         }
@@ -335,6 +357,7 @@ fun TabContent(
                             ScanlationGroupSection(scanlationGroupSearchState)
                         }
                     }
+
                     1 -> { // Manga list
                         MangaSection(comicSearchState)
                     }
@@ -361,9 +384,7 @@ fun TabContent(
             }
         }
 
-        SearchEvent.Empty -> TODO()
-        is SearchEvent.ErrorAuthor ->
-        {
+        is SearchEvent.ErrorAuthor -> {
             val errorMessage = status.message.asString()
             Column(
                 Modifier.fillMaxSize(),
@@ -373,6 +394,7 @@ fun TabContent(
                 Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
             }
         }
+
         is SearchEvent.ErrorComic -> {
             val errorMessage = status.message.asString()
             Column(
@@ -383,6 +405,7 @@ fun TabContent(
                 Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
             }
         }
+
         is SearchEvent.ErrorGroup -> {
             val errorMessage = status.message.asString()
             Column(
@@ -401,56 +424,62 @@ private fun ScanlationGroupSection(scanlationGroupSearchState: List<ScanlationGr
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = "Group",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(8.dp)
-        )
-        scanlationGroupSearchState.forEach { group ->
-            Column {
-                ScanlationGroupSearchItem(group)
+        if (scanlationGroupSearchState.isNotEmpty()) {
+            Text(
+                text = "Group",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+            scanlationGroupSearchState.forEach { group ->
+                Column {
+                    ScanlationGroupSearchItem(group)
+                }
             }
+            SeeMoreButton(SearchType.GROUP)
         }
-        SeeMoreButton(SearchType.SCANLATION_GROUP)
     }
 }
 
 @Composable
 private fun AuthorSection(authorSearchState: List<AuthorSearch>) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = "Author",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(8.dp)
-        )
-        authorSearchState.forEach { author ->
-            SearchAuthorItem(author)
+    if (authorSearchState.isNotEmpty()) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Author",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+            authorSearchState.forEach { author ->
+                SearchAuthorItem(author)
+            }
+            SeeMoreButton(SearchType.AUTHOR)
         }
-        SeeMoreButton(SearchType.AUTHOR)
     }
 }
 
 @Composable
 private fun MangaSection(comicSearchState: List<SearchComic>) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = "Manga",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(8.dp)
-        )
-        comicSearchState.forEach { comic ->
-            MangaSearchResultItem(
-                comic
-            ) {}
+    if (comicSearchState.isNotEmpty()) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Manga",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+            comicSearchState.forEach { comic ->
+                MangaSearchResultItem(
+                    comic
+                ) {}
+            }
+            SeeMoreButton(SearchType.COMIC)
         }
-        SeeMoreButton(SearchType.COMIC)
     }
 }
 

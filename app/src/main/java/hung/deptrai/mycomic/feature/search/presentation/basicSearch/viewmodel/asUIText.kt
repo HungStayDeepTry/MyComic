@@ -90,5 +90,6 @@ fun Result.Error<*, DataError>.asErrorUiText(): UiText {
 fun PresentationError.asUiText(): UiText {
     return when (this) {
         PresentationError.EmptyInput -> UiText.StringResource(R.string.error_empty_search)
+        PresentationError.EmptyList -> UiText.StringResource(R.string.empty_list)
     }
 }

@@ -44,7 +44,6 @@ import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.util.getS
 @Composable
 fun MangaSearchResultItem(
     manga: SearchComic,
-//    tagState: Result<List<TagSearch>>,
     onItemClick: (String) -> Unit
 ) {
     Box(
@@ -142,7 +141,7 @@ fun MangaSearchResultItem(
                                 contentDescription = stringResource(R.string.comment_count)
                             )
                             Text(
-                                text = formatNumberShort(manga.commentsCount ?: 0).toString(),
+                                text = formatNumberShort(manga.commentsCount ?: 0),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onBackground
                             )

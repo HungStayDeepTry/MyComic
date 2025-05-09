@@ -15,7 +15,7 @@ class SearchUseCase @Inject constructor(
 ) {
     suspend fun search(title: String, type: SearchType): List<Result<List<Any>, Error>>{
         val isLoggedIn = tokenRepository.readToken().first().accessToken.isNotEmpty()
-        if(type == SearchType.SCANLATION_GROUP  && !isLoggedIn){
+        if(type == SearchType.GROUP  && !isLoggedIn){
             return listOf(Result.Error(QueryError.USER_NOT_LOGGED_IN))
         }
         return searchRepository.searchByTitle(title, type, isLoggedIn)

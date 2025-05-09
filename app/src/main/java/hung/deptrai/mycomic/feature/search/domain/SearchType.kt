@@ -4,5 +4,5 @@ enum class SearchType {
     ALL,
     AUTHOR,
     COMIC,
-    SCANLATION_GROUP
+    GROUP
 }
