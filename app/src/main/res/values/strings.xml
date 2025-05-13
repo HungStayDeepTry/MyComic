@@ -1,3 +1,37 @@
 <resources>
     <string name="app_name">MyComic</string>
+    <string name="rating">Rating</string>
+    <string name="bookmark_count">bookmark count</string>
+    <string name="NA">N/A</string>
+    <string name="comment_count">comment count</string>
+    <string name="status_comic">status</string>
+
+    // err
+    <string name="the_request_timed_out">The request timed out</string>
+    <string name="youve_hit_your_rate_limit">You\'ve hit your rate limit</string>
+    <string name="no_internet">Couldn\'t reach server. Check your internet connection.</string>
+    <string name="file_too_large">The file you tried to upload was too large.</string>
+    <string name="server_error">Oops, something went wrong. Please try again.</string>
+    <string name="unknown_error">An unknown error occurred</string>
+    <string name="error_disk_full">Failed to save the item because your device\'s disk is full</string>
+    <string name="error_serialization">Oops, couldn\'t parse data.</string>
+    <string name="error_password_too_short">The password is too short</string>
+
+    //new err
+    <!-- New errors -->
+    <string name="bad_request">Bad request</string>
+    <string name="unauthorized">Unauthorized</string>
+    <string name="forbidden">Forbidden</string>
+    <string name="not_found">Not found</string>
+    <string name="method_not_allowed">Method not allowed</string>
+    <string name="conflict">Conflict</string>
+    <string name="gone">Gone</string>
+    <string name="length_required">Length required</string>
+    <string name="unsupported_media_type">Unsupported media type</string>
+    <string name="bad_gateway">Bad gateway</string>
+    <string name="service_unavailable">Service unavailable</string>
+    <string name="gateway_timeout">Gateway timeout</string>
+    <string name="not_logged_in">Please login to continue!</string>
+    <string name="error_empty_search">Let\'s input something!</string>
+    <string name="empty_list">No results found.</string>
 </resources>

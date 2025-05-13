@@ -13,7 +13,7 @@ import hung.deptrai.mycomic.feature.mock_login.navigation.LoginNavigationImpl
 abstract class LoginNavigationModule {
     @Binds
     @IntoSet
-    abstract fun bindSearchNavigation(
+    abstract fun bindLoginNavigation(
         impl: LoginNavigationImpl
     ): FeatureNavigation
 }
