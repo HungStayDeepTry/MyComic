@@ -9,7 +9,7 @@ import hung.deptrai.mycomic.core.network.coverArt.CoverArtAPI
 import hung.deptrai.mycomic.core.network.scanlationGroup.SearchScanlationGroupAPI
 import hung.deptrai.mycomic.core.network.statistic.SearchStatisticsAPI
 import hung.deptrai.mycomic.core.network.user.UserSearchAPI
-import hung.deptrai.mycomic.feature.search.data.remote.SearchComicAPI
+import hung.deptrai.mycomic.core.network.MangaAPI
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -25,8 +25,8 @@ object NetworkModule {
             .build()
     }
     @Provides
-    fun provideSearchComicAPI(retrofit: Retrofit): SearchComicAPI {
-        return retrofit.create(SearchComicAPI::class.java)
+    fun provideSearchComicAPI(retrofit: Retrofit): MangaAPI {
+        return retrofit.create(MangaAPI::class.java)
     }
 
     @Provides
