@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "MyComic"
 include(":app")
 include(":constants")
+include(":core")

@@ -9,12 +9,11 @@ import hung.deptrai.mycomic.core.network.author.SearchAuthorAPI
 import hung.deptrai.mycomic.core.network.coverArt.CoverArtAPI
 import hung.deptrai.mycomic.core.network.statistic.SearchStatisticsAPI
 import hung.deptrai.mycomic.core.data.dto.Attributes
-import hung.deptrai.mycomic.core.network.MangaAPI
+import hung.deptrai.mycomic.core.network.manga.MangaAPI
 import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchComicDataSource
 import hung.deptrai.mycomic.core.data.dto.author.AuthorAttributes
 import hung.deptrai.mycomic.core.data.dto.coverArt.CoverArtAttributes
 import hung.deptrai.mycomic.core.data.dto.statistic.StatisticsResponse
-import hung.deptrai.mycomic.core.data.dto.tag.TagAttributesDTO
 import javax.inject.Inject
 
 class SearchComicDataSourceImpl @Inject constructor(
