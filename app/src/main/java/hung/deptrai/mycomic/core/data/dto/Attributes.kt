@@ -22,3 +22,8 @@ data class Attributes(
     val version: Int,
     val year: Int
 )
+
+
+data class ListAttributesDto(
+    val name: String?
+)

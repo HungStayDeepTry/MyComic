@@ -3,10 +3,13 @@ package hung.deptrai.mycomic.core.network.manga
 import hung.deptrai.constants.MdConstants
 import hung.deptrai.core.network.ProxyRetrofitQueryMap
 import hung.deptrai.mycomic.core.data.dto.Attributes
+import hung.deptrai.mycomic.core.data.dto.ListAttributesDto
 import hung.deptrai.mycomic.core.data.dto.wrapper.DTOject
+import hung.deptrai.mycomic.core.data.dto.wrapper.JsonFewestResponse
 import hung.deptrai.mycomic.core.data.dto.wrapper.JsonResponse
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.QueryMap
 
@@ -31,5 +34,10 @@ interface MangaAPI {
         @QueryMap options: ProxyRetrofitQueryMap
     ): Response<JsonResponse<DTOject<Attributes>>>
 
-
+    @GET(
+        "${MdConstants.Api.list}/{id}"
+    )
+    suspend fun viewList(
+        @Path("id") id: String
+    ): Response<JsonFewestResponse<DTOject<ListAttributesDto>>>
 }

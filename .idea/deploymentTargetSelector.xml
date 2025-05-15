@@ -13,10 +13,10 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="constants">
+      <SelectionState runConfigName="core">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="core">
+      <SelectionState runConfigName="constants">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
