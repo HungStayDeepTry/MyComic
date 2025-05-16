@@ -1,5 +1,7 @@
 package hung.deptrai.mycomic.feature.search.domain.model
 
+import hung.deptrai.mycomic.core.domain.model.Tag
+
 data class SearchComic(
     val id: String,
     val title: String,
@@ -16,5 +18,5 @@ data class SearchComic(
     val averageRating: Double? = null, // Điểm đánh giá trung bình
     val bayesianRating: Double? = null, // Điểm đánh giá bayesian
     val commentsCount: Int? = null,
-    val tags: List<TagSearch>
+    val tags: List<Tag>
 )

@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import hung.deptrai.mycomic.R
 import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
-import hung.deptrai.mycomic.feature.search.domain.model.TagSearch
+import hung.deptrai.mycomic.core.domain.model.Tag
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.util.getStatusColor
 
 @SuppressLint("DefaultLocale")
@@ -272,7 +272,7 @@ fun formatNumberShort(value: Int): String {
     }
 }
 // Ưu tiên sắp xếp
-fun getTagPriority(tag: TagSearch): Int {
+fun getTagPriority(tag: Tag): Int {
     return when (tag.group.lowercase()) {
         "content" -> 1
         "format" -> 2
@@ -283,7 +283,7 @@ fun getTagPriority(tag: TagSearch): Int {
 }
 
 // Màu background cho tag
-fun getTagBackgroundColor(tag: TagSearch): Color? {
+fun getTagBackgroundColor(tag: Tag): Color? {
     return when (tag.group.lowercase()) {
         "content" -> Color(0xFFE57373) // đỏ
         "format" -> if (tag.name.equals("doujinshi", ignoreCase = true)) Color(0xFFBA68C8) else null
