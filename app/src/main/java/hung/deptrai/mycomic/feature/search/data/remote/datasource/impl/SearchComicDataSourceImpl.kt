@@ -25,7 +25,7 @@ class SearchComicDataSourceImpl @Inject constructor(
         return safeApiCall { api.getComicByTitle(title) }
     }
 
-    override suspend fun getAuthorById(authorIds: List<String>): Result<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.author.AuthorAttributes>>, DataError.Network> {
+    override suspend fun getAuthorById(authorIds: List<String>): Result<JsonResponse<DTOject<AuthorAttributes>>, DataError.Network> {
         return safeApiCall { api1.getAuthorById(authorIds) }
     }
 
