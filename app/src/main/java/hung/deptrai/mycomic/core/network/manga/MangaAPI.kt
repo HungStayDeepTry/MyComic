@@ -2,11 +2,11 @@ package hung.deptrai.mycomic.core.network.manga
 
 import hung.deptrai.constants.MdConstants
 import hung.deptrai.core.network.ProxyRetrofitQueryMap
-import hung.deptrai.mycomic.core.data.dto.Attributes
-import hung.deptrai.mycomic.core.data.dto.ListAttributesDto
-import hung.deptrai.mycomic.core.data.dto.wrapper.DTOject
-import hung.deptrai.mycomic.core.data.dto.wrapper.JsonFewestResponse
-import hung.deptrai.mycomic.core.data.dto.wrapper.JsonResponse
+import hung.deptrai.mycomic.core.data.remote.dto.Attributes
+import hung.deptrai.mycomic.core.data.remote.dto.ListAttributesDto
+import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject
+import hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonFewestResponse
+import hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -18,26 +18,26 @@ interface MangaAPI {
     suspend fun getComicByTitle(
         @Query("title") title: String,
         @Query("limit") limit: Int = 20
-    ): Response<JsonResponse<DTOject<Attributes>>>
+    ): Response<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.Attributes>>>
 
     @GET(
         "${MdConstants.Api.manga}?&order[createdAt]=desc&includes[]=${MdConstants.Types.coverArt}"
     )
     suspend fun recentlyAdded(
         @QueryMap options: ProxyRetrofitQueryMap
-    ): Response<JsonResponse<DTOject<Attributes>>>
+    ): Response<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject1<hung.deptrai.mycomic.core.data.remote.dto.Attributes>>>
 
     @GET(
         "${MdConstants.Api.manga}?&order[followedCount]=desc&includes[]=${MdConstants.Types.coverArt}&hasAvailableChapters=true"
     )
     suspend fun popularNewReleases(
         @QueryMap options: ProxyRetrofitQueryMap
-    ): Response<JsonResponse<DTOject<Attributes>>>
+    ): Response<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject1<hung.deptrai.mycomic.core.data.remote.dto.Attributes>>>
 
     @GET(
         "${MdConstants.Api.list}/{id}"
     )
     suspend fun viewList(
         @Path("id") id: String
-    ): Response<JsonFewestResponse<DTOject<ListAttributesDto>>>
+    ): Response<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonFewestResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.ListAttributesDto>>>
 }

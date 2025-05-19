@@ -34,7 +34,6 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,30 +64,26 @@ import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.ScanlationGroupSearchItem
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.SearchAuthorItem
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.component.SeeMoreButton
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchAction
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchEvent
-import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchViewModel
+import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchUiState
 import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(
-    searchViewModel: SearchViewModel
+    action: (SearchAction) -> Unit,
+    searchUIState: SearchUiState
 ) {
     val context = LocalContext.current
-    val comicSearchState by searchViewModel.comics.collectAsState()
-    val authorSearchState by searchViewModel.authors.collectAsState()
-    val scanlationGroupSearchState by searchViewModel.groups.collectAsState()
-    val searchStatus by searchViewModel.events.collectAsState(initial = null)
-    val errorEvents by searchViewModel.errorEvent.collectAsState(initial = null)
-    val textInput2 by searchViewModel.inputText.collectAsState()
     val selectedTabIndex = rememberSaveable { mutableStateOf(0) }
-    val errorMessage = when (errorEvents) {
-        is SearchEvent.Error -> (errorEvents as SearchEvent.Error).message.asString()
+    val errorMessage = when (searchUIState.errorEvent) {
+        is SearchEvent.Error -> (searchUIState.errorEvent as SearchEvent.Error).message.asString()
         is SearchEvent.ErrorAuthor -> "Author error"
         is SearchEvent.ErrorComic -> "Comic error"
         is SearchEvent.ErrorGroup -> "Group error"
         else -> null
     }
-    LaunchedEffect(errorEvents) {
+    LaunchedEffect(searchUIState.errorEvent) {
         if (errorMessage != null) {
             // xử lý thông báo lỗi, ví dụ: hiển thị snackbar
             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
@@ -117,8 +112,8 @@ fun SearchScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
-                    SearchBar(query = textInput2, onQueryChange = {
-                        searchViewModel.textChanged(it)
+                    SearchBar(query = searchUIState.inputText, onQueryChange = {
+                        action(SearchAction.TextChange(it))
                     })
                 }
 
@@ -126,16 +121,17 @@ fun SearchScreen(
                     SearchTabs(
                         selectedTabIndex = selectedTabIndex.value,
                         onTabSelected = { selectedTabIndex.value = it },
-                        searchViewModel = searchViewModel
+                        uiSearchUiState = searchUIState,
+                        action
                     )
                 }
 
                 item {
-                    searchStatus?.let {
+                    searchUIState.event?.let {
                         TabContent(
-                            comicSearchState = comicSearchState,
-                            authorSearchState = authorSearchState,
-                            scanlationGroupSearchState = scanlationGroupSearchState,
+                            comicSearchState = searchUIState.comics,
+                            authorSearchState = searchUIState.authors,
+                            scanlationGroupSearchState = searchUIState.groups,
                             selectedTabIndex = selectedTabIndex.value,
                             status = it
                         )
@@ -237,11 +233,12 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
 fun SearchTabs(
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
-    searchViewModel: SearchViewModel
+    uiSearchUiState: SearchUiState,
+    action: (SearchAction) -> Unit
 ) {
     val offsetAnim = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
-    val textInput2 by searchViewModel.inputText.collectAsState()
+//    val textInput2 by searchViewModel.inputText.collectAsState()
 
     LaunchedEffect(selectedTabIndex) {
         offsetAnim.snapTo(0f)
@@ -260,6 +257,7 @@ fun SearchTabs(
             .clip(RoundedCornerShape(4.dp))
             .clickable {
 //                searchViewModel.search(textInput2, type)
+                action(SearchAction.TabRowClick(type = uiSearchUiState.typeInput))
             },
         contentColor = MaterialTheme.colorScheme.outlineVariant,
         indicator = {}
@@ -271,13 +269,16 @@ fun SearchTabs(
             SearchType.GROUP
         ).forEachIndexed { index, title ->
             if (selectedTabIndex == index) {
-                searchViewModel.setTypeInput(title)
+//                action()
 //                searchViewModel.search(textInput2, title)
+
                 Tab(
                     selected = true,
                     onClick = {
                         onTabSelected(index)
 //                        searchViewModel.search(textInput2, title)
+//                        action(SearchAction.TextChange(uiSearchUiState.inputText))
+                        action(SearchAction.TabRowClick(type = title))
                     },
                     text = {
                         Text(
@@ -301,7 +302,8 @@ fun SearchTabs(
                     selected = false,
                     onClick = {
                         onTabSelected(index)
-                        searchViewModel.search(textInput2, title)
+//                        searchViewModel.search(textInput2, title)
+                        action(SearchAction.TabRowClick(title))
                     },
                     text = {
                         Text(

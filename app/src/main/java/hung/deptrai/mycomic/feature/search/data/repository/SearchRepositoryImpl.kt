@@ -1,5 +1,6 @@
 package hung.deptrai.mycomic.feature.search.data.repository
 
+import hung.deptrai.mycomic.core.data.remote.datasource.StatisticDataSource
 import hung.deptrai.mycomic.core.domain.exception.DataError
 import hung.deptrai.mycomic.core.domain.mapper.AuthorDTOtoAuthorSearch
 import hung.deptrai.mycomic.core.domain.mapper.ScanlationGrouptoScanlationSearch
@@ -26,6 +27,7 @@ class SearchRepositoryImpl @Inject constructor(
     private val searchComicDataSource: SearchComicDataSource,
     private val searchScanlationGroupDataSource: SearchScanlationGroupDataSource,
     private val tokenRepository: TokenRepository,
+    private val statisticDataSource: StatisticDataSource,
     private val userDataSource: SearchUserDataSource
 ) : SearchRepository{
     override suspend fun searchByTitle(title: String, type: SearchType, isLoggedIn: Boolean): List<Result<List<Any>, DataError.Network>> {
@@ -154,7 +156,7 @@ class SearchRepositoryImpl @Inject constructor(
                 // B3: Gọi 3 API song song
                 val authorRes = searchComicDataSource.getAuthorById(authorIds)
                 val coverArtRes = searchComicDataSource.getCoverArtById(coverArtIds)
-                val statRes = searchComicDataSource.getStatisticsByIds(mangaIds)
+                val statRes = statisticDataSource.getStatisticsByIds(mangaIds)
 
                 // B4: Kiểm tra kết quả
                 if (

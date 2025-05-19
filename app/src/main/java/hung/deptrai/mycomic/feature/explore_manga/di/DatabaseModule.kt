@@ -16,15 +16,5 @@ import javax.inject.Singleton
 object DatabaseModule {
 
     @Provides
-    @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "mycomic_db"
-        ).build()
-    }
-
-    @Provides
     fun provideHomeMangaDao(db: AppDatabase): HomeMangaDao = db.homeMangaDao()
 }

@@ -1,5 +1,7 @@
 package hung.deptrai.mycomic.feature.search.navigation
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -12,8 +14,13 @@ import javax.inject.Inject
 class SearchNavigationImpl @Inject constructor() : FeatureNavigation{
     override fun register(navGraphBuilder: NavGraphBuilder, navController: NavController) {
         navGraphBuilder.composable("search"){
+            val viewModel = hiltViewModel<SearchViewModel>()
+            val uiState by viewModel.uiState.collectAsState()
             SearchScreen(
-                searchViewModel = hiltViewModel<SearchViewModel>()
+                action = {
+                    viewModel.onEvent(it)
+                },
+                searchUIState = uiState
             )
         }
     }

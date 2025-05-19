@@ -13,3 +13,4 @@ data class MangaHome(
     val tags: List<Tag>,
     val lastUpdatedChapter: ChapterHome
 )
+
