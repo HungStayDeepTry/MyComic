@@ -12,5 +12,10 @@ interface SearchScanlationGroupAPI {
     suspend fun getScanlationGroupByTitle(
         @Query("name") name: String,
         @Query("limit") limit: Int = 20
-    ): Response<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.scanlationGroup.ScanlationGroupAttributes>>>
+    ): Response<JsonResponse<DTOject<ScanlationGroupAttributes>>>
+
+    @GET("group")
+    suspend fun getScanlationGroupByIds(
+        @Query("ids[]") id: String
+    ): Response<JsonResponse<DTOject<ScanlationGroupAttributes>>>
 }

@@ -38,6 +38,10 @@ class HomeLocalDataSourceImpl @Inject constructor(
         return dao.getMangasByIds(mangaIds)
     }
 
+    override fun getLatestChapters(): Flow<List<ChapterEntity>> {
+        return dao.getLatestUpdated()
+    }
+
     override fun upsertByType(list: List<HomeMangaEntity>, type: CustomType) {
         dao.clearMangaByType(type)
         dao.upsertAll(list)

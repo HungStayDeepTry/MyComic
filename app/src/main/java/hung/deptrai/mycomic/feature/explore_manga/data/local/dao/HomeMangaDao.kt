@@ -63,7 +63,7 @@ interface HomeMangaDao {
             LIMIT :limit
         """
     )
-    suspend fun getLatestUpdated(limit: Int = 10): Flow<List<ChapterEntity>>
+    fun getLatestUpdated(limit: Int = 10): Flow<List<ChapterEntity>>
 
     @Query(
         """

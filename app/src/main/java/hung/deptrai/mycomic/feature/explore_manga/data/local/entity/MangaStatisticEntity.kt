@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "manga_statistic")
 data class MangaStatisticEntity(
-    @PrimaryKey val mangaId: String,
+    @PrimaryKey val chapterid: String,
     val followCount: Int,
     val likeCount: Int
     // các trường thống kê khác

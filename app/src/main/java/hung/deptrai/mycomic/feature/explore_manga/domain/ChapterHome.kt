@@ -7,5 +7,6 @@ data class ChapterHome(
     val chapter: String,
     val translatedLang: String,
     val updatedAt: String,
+    val commentCount: Int?,
     val scanlationGroup: String?
 )

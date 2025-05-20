@@ -1,6 +1,7 @@
 package hung.deptrai.mycomic.core.data.utils
 
 import hung.deptrai.mycomic.core.data.remote.dto.ChapterDTO
+import hung.deptrai.mycomic.core.data.remote.dto.scanlationGroup.ScanlationGroupAttributes
 import hung.deptrai.mycomic.core.data.remote.dto.statistic.MangaStatisticDTO
 import hung.deptrai.mycomic.core.data.remote.dto.statistic.StatisticsResponse
 import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject
@@ -9,7 +10,8 @@ import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.ChapterEntit
 
 fun chapterDTOtoChapterEntity(
     chapterDTO: DTOject<ChapterDTO>,
-    statisticDTO: MangaStatisticDTO
+    statisticDTO: MangaStatisticDTO,
+    scanGroupDTO: DTOject<ScanlationGroupAttributes>
 ): ChapterEntity{
     return ChapterEntity(
         chapter = chapterDTO.attributes.chapter ?: "",

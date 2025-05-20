@@ -84,7 +84,7 @@ fun mangaDTOtoMangaHome(
     coverArtDTO: IncludesAttributesDto?,
     authorDTO: List<DTOject<AuthorAttributes>>? = null,
     artistDTO: List<DTOject<ArtistAttributes>>? = null,
-    statisticDTO: MangaStatisticDTO,
+    statisticDTO: MangaStatisticDTO? = null,
     chapter: DTOject<ChapterDTO>? = null,
     scanlationGroup: DTOject<ScanlationGroupAttributes>? = null
 ): MangaHome{
@@ -115,14 +115,14 @@ fun mangaDTOtoMangaHome(
         chapter = chapter?.attributes?.chapter ?: "",
         vol = chapter?.attributes?.volume ?: "",
         translatedLang = chapter?.attributes?.translatedLanguage ?: "",
-        scanlationGroup = scanlationGroup?.attributes?.name
+        scanlationGroup = scanlationGroup?.attributes?.name,
+        commentCount = statisticDTO?.comments?.repliesCount
     )
     return MangaHome(
         id = mangaDTO.id,
         title = mangaDTO.attributes.title.en,
         tags = tags,
         lastUpdatedChapter = chapterHome,
-        commentCount = statisticDTO.comments?.repliesCount,
         originalLang = mangaDTO.attributes.originalLanguage,
         authorName = authors?.joinToString(", ") ?: "",
         artist = artistDTO?.joinToString(", ") ?: "" ,

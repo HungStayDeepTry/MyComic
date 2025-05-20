@@ -6,6 +6,7 @@ import hung.deptrai.core.network.ProxyRetrofitQueryMap
 import hung.deptrai.mycomic.core.data.remote.datasource.ArtistDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.AuthorDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.ChapterDataSource
+import hung.deptrai.mycomic.core.data.remote.datasource.ScanlationGroupDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.StatisticDataSource
 import hung.deptrai.mycomic.core.data.remote.dto.statistic.CommentDTO
 import hung.deptrai.mycomic.core.data.remote.dto.statistic.MangaStatisticDTO
@@ -20,11 +21,13 @@ import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.ChapterEntit
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.CustomType
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.HomeMangaEntity
 import hung.deptrai.mycomic.feature.explore_manga.data.remote.datasource.MangaPageDataSource
+import hung.deptrai.mycomic.feature.explore_manga.domain.ChapterHome
 import hung.deptrai.mycomic.feature.explore_manga.domain.MangaHome
 import hung.deptrai.mycomic.feature.explore_manga.domain.MangaPageRepository
 import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -34,6 +37,7 @@ class MangaPageRepositoryImpl @Inject constructor(
     private val artistDataSource: ArtistDataSource,
     private val authorDataSource: AuthorDataSource,
     private val chapterDataSource: ChapterDataSource,
+    private val scanlationGroupDataSource: ScanlationGroupDataSource,
     private val localDataSource: HomeLocalDataSource
 ) : MangaPageRepository{
     override suspend fun fetchMangaPageInfo(): List<Result<List<Any>, DataError.Network>> {
@@ -61,16 +65,9 @@ class MangaPageRepositoryImpl @Inject constructor(
                     val mangaIds = res.map { it.id }
                     when (val statRes = statisticDs.getStatisticsForMangaByIds(mangaIds)) {
                         is Result.Success -> {
-                            val statMap = statRes.data.statistics
                             val data = res.map {
-                                val stat = statMap[it.id]
                                 mangaDTOtoMangaHome(
                                     mangaDTO = it,
-                                    statisticDTO = stat ?: MangaStatisticDTO(
-                                        CommentDTO(repliesCount = 0, threadId = 0),
-                                        follows = 0,
-                                        RatingDTO(average = 0.0, bayesian = 0.0)
-                                    ),
                                     coverArtDTO = coverArtMap[it.id]
                                 )
                             }
@@ -116,16 +113,13 @@ class MangaPageRepositoryImpl @Inject constructor(
 
                     val author = authorDataSource.getAuthorById(authorIds)
                     val artist = artistDataSource.getArtistById(artistIds)
-                    val statRes = statisticDs.getStatisticsForMangaByIds(mangaIds)
 
                     if(
                         author is Result.Success &&
-                        artist is Result.Success &&
-                        statRes is Result.Success
+                        artist is Result.Success
                     ){
                         val authorMap = author.data.data.associateBy { it.id }
                         val artistMap = artist.data.data.associateBy { it.id }
-                        val statMap = statRes.data.statistics
 
                         val comics = res.mapNotNull { dto ->
                             val authors = dto.relationships
@@ -137,8 +131,6 @@ class MangaPageRepositoryImpl @Inject constructor(
                                 ?.id
                                 ?.let { coverArtMap[it] }
 
-                            val stat = statMap[dto.id]
-
                             val artists = dto.relationships
                                 .filter {
                                     it.type == "artist"
@@ -147,15 +139,15 @@ class MangaPageRepositoryImpl @Inject constructor(
                                     artistMap[it.id]
                                 }
 
-                            if (coverArt != null && stat != null) {
-                                mangaDTOtoMangaHome(dto, coverArt, authors, artists, stat)
+                            if (coverArt != null) {
+                                mangaDTOtoMangaHome(dto, coverArt, authors, artists)
                             } else null
                         }
                         Result.Success(comics)
                     }
                     else{
                         // Ưu tiên lỗi có trước
-                        listOf(author, artist, statRes)
+                        listOf(author, artist)
                             .firstOrNull()
                             ?.let { return@let it as Result<List<MangaHome>, DataError.Network> }
 
@@ -176,24 +168,62 @@ class MangaPageRepositoryImpl @Inject constructor(
                 is Result.Success -> {
                     val rs = res.data.data
                     val chapterIds = rs.map { it.id }
-
-                    when (val statisticRes = statisticDs.getStatisticsForChapterByIds(chapterIds)) {
-                        is Result.Success -> {
+                    val scanlationGroupIds = rs.mapNotNull {
+                        it.relationships.firstOrNull{
+                            it.type == "scanlation_group"
+                        }?.id
+                    }
+                    val statisticRes = statisticDs.getStatisticsForChapterByIds(chapterIds)
+                    val scanGroupRes = scanlationGroupDataSource.getScanlationGroup(scanlationGroupIds)
+                    if(statisticRes is Result.Success && scanGroupRes is Result.Success) {
                             val statMap = statisticRes.data.statistics
+                            val scanMap = scanGroupRes.data.data.associateBy { it.id }
                             val chapters = rs.mapNotNull { dto ->
-                                statMap[dto.id]?.let { stat ->
-                                    chapterDTOtoChapterEntity(dto, stat)
+                                val scanGroups = dto.relationships
+                                    .firstOrNull { it.type == "scanlation_group" }
+                                    ?.id
+                                    ?.let { scanMap[it] }
+                                val statistic = statMap[dto.id]
+                                if(statistic != null && scanGroups != null){
+                                    chapterDTOtoChapterEntity(dto, statistic, scanGroups)
+                                } else{
+                                    null
                                 }
                             }
                             Result.Success(chapters)
-                        }
+                    } else{
+                        listOf(scanGroupRes, scanGroupRes)
+                            .firstOrNull()
+                            ?.let { return@let it as Result<List<MangaHome>, DataError.Network> }
 
-                        is Result.Error -> Result.Error(statisticRes.error)
+                        Result.Error(DataError.Network.UNKNOWN)
                     }
                 }
                 is Result.Error -> Result.Error(res.error)
             }
         }
+    }
+
+    suspend fun refreshLatestChaptersFromRemote() {
+        when (val result = getLatestChapterUpdated()) {
+            is Result.Success -> {
+                localDataSource.upsertChapter(result.data)
+            }
+
+            is Result.Error -> {
+                // Tùy chọn xử lý lỗi, có thể throw nếu muốn
+
+            }
+        }
+    }
+
+    fun getLatestChaptersForHome(): Flow<List<ChapterHome>>{
+        return localDataSource.getLatestChapters()
+            .map {
+                ent -> ent.map {
+                    it.
+            }
+            }
     }
 
 

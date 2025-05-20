@@ -9,7 +9,6 @@ data class MangaHome(
     val artist: String?,
     val coverArt: String,
     val originalLang: String?,
-    val commentCount: Int?,
     val tags: List<Tag>,
     val lastUpdatedChapter: ChapterHome
 )

@@ -13,6 +13,7 @@ interface HomeLocalDataSource {
     fun getFeature(limit: Int): Flow<List<HomeMangaEntity>>
     fun getSeasonal(limit: Int): Flow<List<HomeMangaEntity>>
     fun getMangaByIds(mangaIds: List<String>): Flow<List<HomeMangaEntity>>
+    fun getLatestChapters(): Flow<List<ChapterEntity>>
 
     fun upsertByType(list: List<HomeMangaEntity>, type: CustomType)
     fun upsertChapter(list: List<ChapterEntity>)
