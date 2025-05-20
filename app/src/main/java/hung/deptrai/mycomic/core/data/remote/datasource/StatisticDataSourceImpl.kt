@@ -10,8 +10,14 @@ import javax.inject.Inject
 class StatisticDataSourceImpl @Inject constructor(
     private val api: SearchStatisticsAPI
 ) : StatisticDataSource{
-    override suspend fun getStatisticsByIds(mangaId: List<String>): Result<StatisticsResponse, DataError.Network> {
+    override suspend fun getStatisticsForMangaByIds(mangaId: List<String>): Result<StatisticsResponse, DataError.Network> {
         return safeApiCall { api.getStatisticsForManga(mangaId) }
+    }
+
+    override suspend fun getStatisticsForChapterByIds(chapterId: List<String>): Result<StatisticsResponse, DataError.Network> {
+        return safeApiCall {
+            api.getStatisticsForChapter(chapterId)
+        }
     }
 }
 

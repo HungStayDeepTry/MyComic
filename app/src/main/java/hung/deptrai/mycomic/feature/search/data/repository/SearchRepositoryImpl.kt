@@ -156,7 +156,7 @@ class SearchRepositoryImpl @Inject constructor(
                 // B3: Gọi 3 API song song
                 val authorRes = searchComicDataSource.getAuthorById(authorIds)
                 val coverArtRes = searchComicDataSource.getCoverArtById(coverArtIds)
-                val statRes = statisticDataSource.getStatisticsByIds(mangaIds)
+                val statRes = statisticDataSource.getStatisticsForMangaByIds(mangaIds)
 
                 // B4: Kiểm tra kết quả
                 if (

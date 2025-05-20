@@ -18,7 +18,7 @@ interface MangaAPI {
     suspend fun getComicByTitle(
         @Query("title") title: String,
         @Query("limit") limit: Int = 20
-    ): Response<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.Attributes>>>
+    ): Response<JsonResponse<DTOject<Attributes>>>
 
     @GET(
         "${MdConstants.Api.manga}?&order[createdAt]=desc&includes[]=${MdConstants.Types.coverArt}"

@@ -51,7 +51,6 @@ object MdConstants {
         const val authorizationCode = "authorization_code"
         const val refreshToken = "refresh_token"
 
-        @RequiresApi(Build.VERSION_CODES.FROYO)
         fun authUrl(codeVerifier: String): String {
             val bytes = codeVerifier.toByteArray()
             val messageDigest = MessageDigest.getInstance("SHA-256")
@@ -162,6 +161,5 @@ object MdConstants {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.GINGERBREAD)
     val mdAtHomeTokenLifespan = TimeUnit.MINUTES.toMillis(5)
 }

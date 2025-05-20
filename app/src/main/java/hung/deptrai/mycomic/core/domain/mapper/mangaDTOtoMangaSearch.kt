@@ -65,12 +65,25 @@ fun mangaDTOtoMangaSearch(
     Log.e("MapDTO", "mapDtoToEntity: ${rs.title}", )
     return rs
 }
+//fun ChapterDTO.toChapterHome(
+//    chapter: DTOject<ChapterDTO>
+//): ChapterHome{
+//    return ChapterHome(
+//        id = chapter?.id ?: "",
+//        title = chapter?.attributes?.title,
+//        updatedAt = chapter?.attributes?.updatedAt ?: "",
+//        chapter = chapter?.attributes?.chapter ?: "",
+//        vol = chapter?.attributes?.volume ?: "",
+//        translatedLang = chapter?.attributes?.translatedLanguage ?: "",
+//        scanlationGroup = scanlationGroup?.attributes?.name
+//    )
+//}
 
 fun mangaDTOtoMangaHome(
     mangaDTO: DTOject1<Attributes>,
     coverArtDTO: IncludesAttributesDto?,
     authorDTO: List<DTOject<AuthorAttributes>>? = null,
-    artistDTO: DTOject<ArtistAttributes>? = null,
+    artistDTO: List<DTOject<ArtistAttributes>>? = null,
     statisticDTO: MangaStatisticDTO,
     chapter: DTOject<ChapterDTO>? = null,
     scanlationGroup: DTOject<ScanlationGroupAttributes>? = null
@@ -111,8 +124,8 @@ fun mangaDTOtoMangaHome(
         lastUpdatedChapter = chapterHome,
         commentCount = statisticDTO.comments?.repliesCount,
         originalLang = mangaDTO.attributes.originalLanguage,
-        authorName = authors?.get(0) ?: "",
-        artist = artistDTO?.attributes?.name ,
+        authorName = authors?.joinToString(", ") ?: "",
+        artist = artistDTO?.joinToString(", ") ?: "" ,
         coverArt = coverArtUrl
     )
 }

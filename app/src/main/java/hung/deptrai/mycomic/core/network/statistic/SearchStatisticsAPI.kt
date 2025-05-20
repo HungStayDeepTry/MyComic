@@ -9,5 +9,10 @@ interface SearchStatisticsAPI {
     @GET("statistics/manga")
     suspend fun getStatisticsForManga(
         @Query("manga[]") mangaIds: List<String>
-    ): Response<hung.deptrai.mycomic.core.data.remote.dto.statistic.StatisticsResponse>
+    ): Response<StatisticsResponse>
+
+    @GET("statistics/chapter")
+    suspend fun getStatisticsForChapter(
+        @Query("chapter[]") mangaIds: List<String>
+    ): Response<StatisticsResponse>
 }

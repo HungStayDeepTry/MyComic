@@ -5,3 +5,7 @@ data class MangaStatisticDTO(
     val follows: Int,
     val rating: hung.deptrai.mycomic.core.data.remote.dto.statistic.RatingDTO
 )
+
+data class ChapterStatisticDTO(
+    val comments: CommentDTO?
+)

@@ -1,14 +1,16 @@
 package hung.deptrai.mycomic.feature.explore_manga.data.local.dao
 import androidx.room.*
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.ChapterEntity
+import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.CustomType
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.HomeMangaEntity
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.TagEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HomeMangaDao {
 
     @Transaction
-    suspend fun insertFullManga(
+    fun insertFullManga(
         manga: HomeMangaEntity,
         tags: List<TagEntity>,
         chapters: List<ChapterEntity>
@@ -19,23 +21,108 @@ interface HomeMangaDao {
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertManga(manga: HomeMangaEntity)
+    fun insertManga(manga: HomeMangaEntity)
+
+    @Upsert
+    fun upsertAll(mangaList: List<HomeMangaEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTags(tags: List<TagEntity>)
+    fun upsertAllChapters(chapters: List<ChapterEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertChapters(chapters: List<ChapterEntity>)
+    fun insertTags(tags: List<TagEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertChapters(chapters: List<ChapterEntity>)
+
+    @Query(
+            """
+        SELECT m.*, s.followCount
+        FROM manga m
+        INNER JOIN manga_statistic s ON m.id = s.mangaId
+        WHERE m.customType = 0
+        ORDER BY s.followCount DESC
+        """
+    )
+    fun getPopularNewTitles(): Flow<List<HomeMangaEntity>>
+
+    @Query(
+            """
+        SELECT * FROM manga
+        WHERE manga.customType = 6
+        ORDER BY createdAt DESC
+        LIMIT :limit
+    """
+    )
+    fun getRecentlyAdded(limit: Int = 10): Flow<List<HomeMangaEntity>>
+
+    @Query(
+        """
+            SELECT * FROM chapter
+            ORDER BY chapter.updatedAt DESC
+            LIMIT :limit
+        """
+    )
+    suspend fun getLatestUpdated(limit: Int = 10): Flow<List<ChapterEntity>>
+
+    @Query(
+        """
+            SELECT * FROM manga
+            WHERE manga.customType = 2
+            LIMIT :limit
+        """
+    )
+    fun getStaffPicks(limit: Int = 10): Flow<List<HomeMangaEntity>>
+
+    @Query(
+        """
+            SELECT * FROM manga
+            WHERE manga.customType = 3
+            LIMIT :limit
+        """
+    )
+    fun getSelfPublished(limit: Int = 10): Flow<List<HomeMangaEntity>>
+
+    @Query(
+        """
+            SELECT * FROM manga
+            WHERE manga.customType = 4
+            LIMIT :limit
+        """
+    )
+    fun getFeature(limit: Int = 10): Flow<List<HomeMangaEntity>>
+
+    @Query(
+        """
+            SELECT * FROM manga
+            WHERE manga.customType = 5
+            LIMIT :limit
+        """
+    )
+    fun getSeasonal(limit: Int = 10): Flow<List<HomeMangaEntity>>
+
+
+    @Query(
+        """
+    SELECT * FROM manga
+    WHERE id IN (:mangaIds)
+    """
+    )
+    fun getMangasByIds(mangaIds: List<String>): Flow<List<HomeMangaEntity>>
+
 
     @Query("SELECT * FROM manga")
-    suspend fun getAllManga(): List<HomeMangaEntity>
+    fun getAllManga(): Flow<List<HomeMangaEntity>>
 
     @Query("SELECT * FROM tag WHERE mangaId = :mangaId")
-    suspend fun getTagsForManga(mangaId: String): List<TagEntity>
+    fun getTagsForManga(mangaId: String): Flow<List<TagEntity>>
 
     @Query("SELECT * FROM chapter WHERE mangaId = :mangaId")
-    suspend fun getChaptersForManga(mangaId: String): List<ChapterEntity>
+    fun getChaptersForManga(mangaId: String): Flow<List<ChapterEntity>>
 
-    @Query("DELETE FROM manga")
-    suspend fun clearAllManga()
+    @Query("DELETE FROM manga WHERE customType = :customType")
+    fun clearMangaByType(customType: CustomType)
+
+    @Query("DELETE FROM chapter")
+    fun clearChapterByType()
 }
