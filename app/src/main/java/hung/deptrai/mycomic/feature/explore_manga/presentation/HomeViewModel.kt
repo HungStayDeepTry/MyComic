@@ -19,22 +19,23 @@ class HomeViewModel @Inject constructor(
     private val mangapageRepo: MangaPageRepository
 ) :ViewModel(){
 
-    // need refactor
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing
-
-    private val _mangas = MutableStateFlow<List<MangaHome>>(emptyList())
-    val mangas: StateFlow<List<MangaHome>> = _mangas
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun loadManga(isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _isRefreshing.value = true
+            _uiState.value = _uiState.value.copy(isRefreshing = true)
             mangapageRepo.fetchMangaPageInfo(isRefresh)
-                .catch { e -> /* handle error */ }
+                .catch { e ->
+                    // handle error if needed
+                    _uiState.value = _uiState.value.copy(isRefreshing = false)
+                }
                 .collect { result ->
-                    _mangas.value = result
-                    _isRefreshing.value = false
+                    _uiState.value = _uiState.value.copy(
+                        mangas = result,
+                        isRefreshing = false
+                    )
                 }
         }
     }
@@ -46,3 +47,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 }
+data class HomeUiState(
+    val isRefreshing: Boolean = false,
+    val mangas: List<MangaHome> = emptyList()
+)

@@ -161,5 +161,6 @@ object MdConstants {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.GINGERBREAD)
     val mdAtHomeTokenLifespan = TimeUnit.MINUTES.toMillis(5)
 }
