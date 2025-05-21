@@ -10,6 +10,6 @@ data class MangaHome(
     val coverArt: String,
     val originalLang: String?,
     val tags: List<Tag>,
-    val lastUpdatedChapter: ChapterHome
+    val lastUpdatedChapter: ChapterHome?
 )
 

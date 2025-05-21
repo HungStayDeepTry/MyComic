@@ -12,5 +12,6 @@ data class ChapterEntity(
     val translatedLang: String,
     val updatedAt: String,
     val commentCount: Int?,
+    val scanGroup: String?,
     val mangaId: String // Foreign key reference
 )

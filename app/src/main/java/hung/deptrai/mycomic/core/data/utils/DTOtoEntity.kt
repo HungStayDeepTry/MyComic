@@ -23,6 +23,7 @@ fun chapterDTOtoChapterEntity(
         volume = chapterDTO.attributes.volume ?: "",
         mangaId = chapterDTO.relationships.firstOrNull {
             it.type == "manga"
-        }?.id.toString()
+        }?.id.toString(),
+        scanGroup = scanGroupDTO.attributes.name
     )
 }

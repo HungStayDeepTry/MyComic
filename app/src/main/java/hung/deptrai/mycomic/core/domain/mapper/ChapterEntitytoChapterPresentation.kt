@@ -14,6 +14,6 @@ fun chapterEntitytoChapterHome(
         translatedLang = chapterEntity.translatedLang,
         updatedAt = chapterEntity.updatedAt,
         title = chapterEntity.title,
-        scanlationGroup =
+        scanlationGroup = chapterEntity.scanGroup
     )
 }

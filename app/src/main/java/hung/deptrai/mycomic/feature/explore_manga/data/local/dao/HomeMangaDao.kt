@@ -3,6 +3,7 @@ import androidx.room.*
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.ChapterEntity
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.CustomType
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.HomeMangaEntity
+import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.MangaTagCrossRef
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -10,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface HomeMangaDao {
 
     @Transaction
-    fun insertFullManga(
+    suspend fun insertFullManga(
         manga: HomeMangaEntity,
         tags: List<TagEntity>,
         chapters: List<ChapterEntity>
@@ -21,19 +22,19 @@ interface HomeMangaDao {
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertManga(manga: HomeMangaEntity)
+    suspend fun insertManga(manga: HomeMangaEntity)
 
     @Upsert
-    fun upsertAll(mangaList: List<HomeMangaEntity>)
+    suspend fun upsertAll(mangaList: List<HomeMangaEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun upsertAllChapters(chapters: List<ChapterEntity>)
+    suspend fun upsertAllChapters(chapters: List<ChapterEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertTags(tags: List<TagEntity>)
+    suspend fun insertTags(tags: List<TagEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertChapters(chapters: List<ChapterEntity>)
+    suspend fun insertChapters(chapters: List<ChapterEntity>)
 
     @Query(
             """
@@ -114,15 +115,37 @@ interface HomeMangaDao {
     @Query("SELECT * FROM manga")
     fun getAllManga(): Flow<List<HomeMangaEntity>>
 
-    @Query("SELECT * FROM tag WHERE mangaId = :mangaId")
-    fun getTagsForManga(mangaId: String): Flow<List<TagEntity>>
-
     @Query("SELECT * FROM chapter WHERE mangaId = :mangaId")
     fun getChaptersForManga(mangaId: String): Flow<List<ChapterEntity>>
+
+    // tag
+    @Transaction
+    @Query("""
+    SELECT * FROM tag 
+    INNER JOIN manga_tag_cross_ref 
+    ON tag.id = manga_tag_cross_ref.tagId 
+    WHERE manga_tag_cross_ref.mangaId IN (:mangaIds)
+""")
+    fun getTagsByMangaIds(mangaIds: List<String>): Flow<List<TagEntity>>
+
+    @Query("SELECT * FROM manga_tag_cross_ref WHERE mangaId IN (:mangaIds)")
+    fun getMangaTagCrossRefsByMangaIds(mangaIds: List<String>): Flow<List<MangaTagCrossRef>>
+
+    @Query("SELECT * FROM tag")
+    fun getAllTagsFlow(): Flow<List<TagEntity>>
+
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMangaTagCrossRefs(crossRefs: List<MangaTagCrossRef>)
 
     @Query("DELETE FROM manga WHERE customType = :customType")
     fun clearMangaByType(customType: CustomType)
 
     @Query("DELETE FROM chapter")
     fun clearChapterByType()
+
+    // tag
+    @Query("DELETE FROM manga_tag_cross_ref WHERE mangaId IN (:mangaIds)")
+    suspend fun clearMangaTagCrossRefsByMangaIds(mangaIds: List<String>)
+
 }

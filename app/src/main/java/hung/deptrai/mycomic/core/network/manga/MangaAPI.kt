@@ -5,6 +5,7 @@ import hung.deptrai.core.network.ProxyRetrofitQueryMap
 import hung.deptrai.mycomic.core.data.remote.dto.Attributes
 import hung.deptrai.mycomic.core.data.remote.dto.ListAttributesDto
 import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject
+import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject1
 import hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonFewestResponse
 import hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse
 import retrofit2.Response
@@ -19,6 +20,11 @@ interface MangaAPI {
         @Query("title") title: String,
         @Query("limit") limit: Int = 20
     ): Response<JsonResponse<DTOject<Attributes>>>
+
+    @GET("manga")
+    suspend fun getComicByIds(
+        @Query("ids[]") mangaIds: List<String>
+    ): Response<JsonResponse<DTOject1<Attributes>>>
 
     @GET(
         "${MdConstants.Api.manga}?&order[createdAt]=desc&includes[]=${MdConstants.Types.coverArt}"

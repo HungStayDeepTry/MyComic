@@ -7,6 +7,5 @@ import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.HomeMangaEnt
 import kotlinx.coroutines.flow.Flow
 
 interface MangaPageRepository {
-    suspend fun fetchMangaPageInfo(): List<Result<List<Any>, DataError.Network>>
-    fun observeMangaByType(type: CustomType): Flow<List<HomeMangaEntity>>
+    suspend fun fetchMangaPageInfo(isRefresh: Boolean): Flow<List<MangaHome>>
 }
