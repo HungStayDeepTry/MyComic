@@ -8,7 +8,6 @@ import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject
 import hung.deptrai.mycomic.core.data.remote.dto.Attributes
 import hung.deptrai.mycomic.core.data.remote.dto.ChapterDTO
 import hung.deptrai.mycomic.core.data.remote.dto.IncludesAttributesDto
-import hung.deptrai.mycomic.core.data.remote.dto.artist.ArtistAttributes
 import hung.deptrai.mycomic.core.data.remote.dto.author.AuthorAttributes
 import hung.deptrai.mycomic.core.data.remote.dto.scanlationGroup.ScanlationGroupAttributes
 import hung.deptrai.mycomic.core.data.remote.dto.statistic.MangaStatisticDTO
@@ -87,11 +86,15 @@ fun mangaDTOtoMangaEntity(
     mangaDTO: DTOject1<Attributes>,
     coverArtDTO: IncludesAttributesDto?,
     authorDTO: List<DTOject<AuthorAttributes>>? = null,
-    artistDTO: List<DTOject<ArtistAttributes>>? = null,
+    artistDTO: List<DTOject<AuthorAttributes>>? = null,
     statisticDTO: MangaStatisticDTO? = null,
     customType: Int
 ): Pair<HomeMangaEntity, List<TagEntity>>{
     val authors = authorDTO?.map {
+        it.attributes.name ?: ""
+    }
+
+    val artist = artistDTO?.map {
         it.attributes.name ?: ""
     }
     val coverArtUrl = if (coverArtDTO?.fileName != null) {
@@ -114,7 +117,7 @@ fun mangaDTOtoMangaEntity(
         commentCount = statisticDTO?.comments?.repliesCount ?: 0,
         originalLang = mangaDTO.attributes.originalLanguage,
         authorName = authors?.joinToString(", ") ?: "",
-        artist = artistDTO?.joinToString(", ") ?: "" ,
+        artist = artist?.joinToString(", ") ?: "" ,
         contentRating = mangaDTO.attributes.contentRating,
         createdAt = parseDateToMillis(mangaDTO.attributes.createdAt),
         latestUploadedChapter = mangaDTO.attributes.latestUploadedChapter,

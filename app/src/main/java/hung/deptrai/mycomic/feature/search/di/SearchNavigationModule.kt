@@ -6,6 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
 import hung.deptrai.mycomic.core.navigation.FeatureNavigation
+import hung.deptrai.mycomic.feature.explore_manga.navigation.HomeNavigation
 import hung.deptrai.mycomic.feature.mock_login.navigation.LoginNavigationImpl
 import hung.deptrai.mycomic.feature.search.navigation.SearchNavigationImpl
 
@@ -16,5 +17,11 @@ abstract class SearchNavigationModule {
     @IntoSet
     abstract fun bindSearchNavigation(
         impl: SearchNavigationImpl
+    ): FeatureNavigation
+
+    @Binds
+    @IntoSet
+    abstract fun bindHomeNavigation(
+        impl: HomeNavigation
     ): FeatureNavigation
 }

@@ -5,9 +5,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import hung.deptrai.constants.MdConstants
 import hung.deptrai.mycomic.core.network.TokenApi
-import hung.deptrai.mycomic.core.network.author.SearchAuthorAPI
+import hung.deptrai.mycomic.core.network.author.AuthorAPI
 import hung.deptrai.mycomic.core.network.coverArt.CoverArtAPI
-import hung.deptrai.mycomic.core.network.scanlationGroup.SearchScanlationGroupAPI
+import hung.deptrai.mycomic.core.network.manga.ChapterAPI
+import hung.deptrai.mycomic.core.network.scanlationGroup.ScanlationGroupAPI
 import hung.deptrai.mycomic.core.network.statistic.SearchStatisticsAPI
 import hung.deptrai.mycomic.core.network.user.UserSearchAPI
 import hung.deptrai.mycomic.core.network.manga.MangaAPI
@@ -31,13 +32,18 @@ object NetworkModule {
     }
 
     @Provides
+    fun provideSearchChapterAPI(retrofit: Retrofit): ChapterAPI {
+        return retrofit.create(ChapterAPI::class.java)
+    }
+
+    @Provides
     fun provideSearchCovertArtAPI(retrofit: Retrofit): CoverArtAPI{
         return retrofit.create(CoverArtAPI::class.java)
     }
 
     @Provides
-    fun provideSearchAuthorByIdAPI(retrofit: Retrofit): SearchAuthorAPI{
-        return retrofit.create(SearchAuthorAPI::class.java)
+    fun provideSearchAuthorByIdAPI(retrofit: Retrofit): AuthorAPI{
+        return retrofit.create(AuthorAPI::class.java)
     }
 
     @Provides
@@ -46,8 +52,8 @@ object NetworkModule {
     }
 
     @Provides
-    fun provideSearchScanlationGroupByTitleAPI(retrofit: Retrofit): SearchScanlationGroupAPI{
-        return retrofit.create(SearchScanlationGroupAPI::class.java)
+    fun provideSearchScanlationGroupByTitleAPI(retrofit: Retrofit): ScanlationGroupAPI{
+        return retrofit.create(ScanlationGroupAPI::class.java)
     }
 
     @Provides

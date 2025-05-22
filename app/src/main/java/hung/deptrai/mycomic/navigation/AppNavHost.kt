@@ -13,7 +13,7 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     featureNavigation: Set<@JvmSuppressWildcards FeatureNavigation>
 ) {
-    NavHost(navController, startDestination = "search") {
+    NavHost(navController, startDestination = "home") {
         featureNavigation.forEach {
             it.register(this, navController)
         }

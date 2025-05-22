@@ -10,6 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import hung.deptrai.mycomic.core.navigation.FeatureNavigation
 import hung.deptrai.mycomic.feature.explore_manga.presentation.HomeViewModel
+import hung.deptrai.mycomic.feature.explore_manga.presentation.ui.HomeScreen
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.SearchScreen
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.viewmodel.SearchViewModel
 import javax.inject.Inject

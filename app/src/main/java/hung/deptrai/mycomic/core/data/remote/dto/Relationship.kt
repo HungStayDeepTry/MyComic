@@ -12,7 +12,7 @@ data class Relationship(
 @Serializable
 data class RelationshipDTO(
     val id: String,
-    val related: IncludesAttributesDto? = null,
+    val attributes: IncludesAttributesDto? = null,
     val type: String
 )
 

@@ -7,7 +7,7 @@ import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface SearchScanlationGroupAPI {
+interface ScanlationGroupAPI {
     @GET("group")
     suspend fun getScanlationGroupByTitle(
         @Query("name") name: String,
@@ -16,6 +16,6 @@ interface SearchScanlationGroupAPI {
 
     @GET("group")
     suspend fun getScanlationGroupByIds(
-        @Query("ids[]") id: String
+        @Query("ids[]") id: List<String>
     ): Response<JsonResponse<DTOject<ScanlationGroupAttributes>>>
 }

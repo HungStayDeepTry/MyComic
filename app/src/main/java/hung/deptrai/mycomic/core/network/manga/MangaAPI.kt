@@ -23,7 +23,8 @@ interface MangaAPI {
 
     @GET("manga")
     suspend fun getComicByIds(
-        @Query("ids[]") mangaIds: List<String>
+        @Query("ids[]") mangaIds: List<String>,
+        @Query("includes[]") includes: List<String> = listOf("cover_art")
     ): Response<JsonResponse<DTOject1<Attributes>>>
 
     @GET(

@@ -5,11 +5,11 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import hung.deptrai.constants.MdConstants
 import hung.deptrai.core.network.ProxyRetrofitQueryMap
-import hung.deptrai.mycomic.core.data.remote.datasource.ArtistDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.AuthorDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.ChapterDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.ScanlationGroupDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.StatisticDataSource
+import hung.deptrai.mycomic.core.data.remote.dto.IncludesAttributesDto
 import hung.deptrai.mycomic.core.data.utils.MdUtil
 import hung.deptrai.mycomic.core.data.utils.chapterDTOtoChapterEntity
 import hung.deptrai.mycomic.core.domain.exception.DataError
@@ -28,6 +28,7 @@ import hung.deptrai.mycomic.feature.explore_manga.domain.ChapterHome
 import hung.deptrai.mycomic.feature.explore_manga.domain.MangaHome
 import hung.deptrai.mycomic.feature.explore_manga.domain.MangaPageRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
@@ -40,7 +41,6 @@ import javax.inject.Inject
 class MangaPageRepositoryImpl @Inject constructor(
     private val dataSource: MangaPageDataSource,
     private val statisticDs: StatisticDataSource,
-    private val artistDataSource: ArtistDataSource,
     private val authorDataSource: AuthorDataSource,
     private val chapterDataSource: ChapterDataSource,
     private val scanlationGroupDataSource: ScanlationGroupDataSource,
@@ -65,8 +65,8 @@ class MangaPageRepositoryImpl @Inject constructor(
 
                     val coverArtMap = res.associate { dto ->
                         val coverArt = dto.relationships.firstOrNull {
-                            it.type == "cover_art" && it.related != null
-                        }?.related
+                            it.type == "cover_art" && it.attributes != null
+                        }?.attributes
                         dto.id to coverArt
                     }
 
@@ -106,8 +106,8 @@ class MangaPageRepositoryImpl @Inject constructor(
 
                     val coverArtMap = res.associate { dto ->
                         val coverArt = dto.relationships.firstOrNull {
-                            it.type == "cover_art" && it.related != null
-                        }?.related
+                            it.type == "cover_art" && it.attributes != null
+                        }?.attributes
                         dto.id to coverArt
                     }
 
@@ -122,7 +122,7 @@ class MangaPageRepositoryImpl @Inject constructor(
                         .distinct()
 
                     val author = authorDataSource.getAuthorById(authorIds)
-                    val artist = artistDataSource.getArtistById(artistIds)
+                    val artist = authorDataSource.getAuthorById(artistIds)
 
                     if(
                         author is Result.Success &&
@@ -194,7 +194,7 @@ class MangaPageRepositoryImpl @Inject constructor(
                                     ?.id
                                     ?.let { scanMap[it] }
                                 val statistic = statMap[dto.id]
-                                if(statistic != null && scanGroups != null){
+                                if(statistic != null){
                                     chapterDTOtoChapterEntity(dto, statistic, scanGroups)
                                 } else{
                                     null
@@ -221,15 +221,12 @@ class MangaPageRepositoryImpl @Inject constructor(
                 is Result.Success -> {
                     val coverArtMap = res.data.data.associate { dto ->
                         val coverArt = dto.relationships.firstOrNull {
-                            it.type == "cover_art" && it.related != null
-                        }?.related
+                            it.type == "cover_art" && it.attributes != null
+                        }?.attributes
                         dto.id to coverArt
                     }
                     val data = res.data.data.map { it ->
-                        val coverArt = it.relationships
-                            .firstOrNull { it.type == "cover_art" }
-                            ?.id
-                            ?.let { coverArtMap[it] }
+                        val coverArt: IncludesAttributesDto? = coverArtMap[it.id]
                         mangaDTOtoMangaEntity(it, customType = 1, coverArtDTO = coverArt).first
                     }
                     Result.Success(data)
@@ -251,11 +248,13 @@ class MangaPageRepositoryImpl @Inject constructor(
 
                 if (mangaRes is Result.Success) {
                     try {
-                        localDataSource.upsertAllMangas(
-                            mangaRes.data,
-                            customType = CustomType.LATEST_UPDATES
-                        )
-                        localDataSource.upsertChapter(result.data)
+                        withContext(Dispatchers.IO) {
+                            localDataSource.upsertAllMangas(
+                                mangaRes.data,
+                                customType = CustomType.LATEST_UPDATES
+                            )
+                            localDataSource.upsertChapter(result.data)
+                        }
                     } catch (e: Exception) {
                         // Ghi log hoặc xử lý lỗi cụ thể
                         Log.e("refreshLatestChapters", "Lỗi khi insert vào Room: ${e.message}", e)
@@ -271,11 +270,10 @@ class MangaPageRepositoryImpl @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun getLatestChapters(isRefresh: Boolean): Flow<List<MangaHome>> = flow {
-        if(isRefresh){
+        if (isRefresh) {
             refreshLatestChapters()
-        } else{
-            emitAll(getMangaByLatestChaptersFromLocal())
         }
+        emitAll(getMangaByLatestChaptersFromLocal())
     }
 
 
@@ -310,16 +308,8 @@ class MangaPageRepositoryImpl @Inject constructor(
         }
     }
 
-//    fun getLatestChaptersForHome(): Flow<List<ChapterHome>> {
-//        return localDataSource.getLatestChapters()
-//            .map { entityList ->
-//                entityList.map { chapterEntity ->
-//                    chapterEntitytoChapterHome(chapterEntity)
-//                }
-//            }
-//    }
-
-    fun getMangaByLatestChaptersFromLocal(): Flow<List<MangaHome>> {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun getMangaByLatestChaptersFromLocal(): Flow<List<MangaHome>> {
         return localDataSource.getLatestChapters()
             .flatMapLatest { chapters ->
                 val mangaIds = chapters.map { it.mangaId }.distinct()
@@ -328,8 +318,17 @@ class MangaPageRepositoryImpl @Inject constructor(
                     localDataSource.getMangaByIds(mangaIds),
                     localDataSource.getTagsByMangaIds(mangaIds)
                 ) { mangas, tagsByMangaId ->
-                    mangas.map { manga ->
-                        val latestChapter = chapters.firstOrNull { it.mangaId == manga.id }
+
+                    // Lấy chương có updatedAt mới nhất cho mỗi manga
+                    val latestChapterByManga = chapters
+                        .groupBy { it.mangaId }
+                        .mapValues { (_, list) ->
+                            list.maxByOrNull { it.updatedAt }
+                        }
+
+                    latestChapterByManga.mapNotNull { (mangaId, chapter) ->
+                        val manga = mangas.firstOrNull { it.id == mangaId } ?: return@mapNotNull null
+                        val tags = tagsByMangaId[manga.id] ?: emptyList()
 
                         MangaHome(
                             id = manga.id,
@@ -338,10 +337,8 @@ class MangaPageRepositoryImpl @Inject constructor(
                             artist = manga.artist,
                             coverArt = manga.coverArtLink ?: "",
                             originalLang = manga.originalLang,
-                            lastUpdatedChapter = latestChapter?.let { chapterEntitytoChapterHome(it) },
-                            tags = tagsByMangaId[manga.id]?.map { tagEntity ->
-                                Tag(tagEntity.id, tagEntity.name, tagEntity.group)
-                            } ?: emptyList()
+                            lastUpdatedChapter = chapterEntitytoChapterHome(chapter!!),
+                            tags = tags.map { Tag(it.id, it.name, it.group) }
                         )
                     }
                 }

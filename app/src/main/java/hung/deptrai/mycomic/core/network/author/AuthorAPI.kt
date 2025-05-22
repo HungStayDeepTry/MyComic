@@ -1,13 +1,10 @@
 package hung.deptrai.mycomic.core.network.author
 
-import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject
-import hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse
-import hung.deptrai.mycomic.core.data.remote.dto.author.AuthorAttributes
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface SearchAuthorAPI {
+interface AuthorAPI {
     @GET("author")
     suspend fun getAuthorById(
         @Query("ids[]") ids: List<String>,

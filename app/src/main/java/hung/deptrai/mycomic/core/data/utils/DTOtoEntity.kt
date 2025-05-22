@@ -11,7 +11,7 @@ import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.ChapterEntit
 fun chapterDTOtoChapterEntity(
     chapterDTO: DTOject<ChapterDTO>,
     statisticDTO: MangaStatisticDTO,
-    scanGroupDTO: DTOject<ScanlationGroupAttributes>
+    scanGroupDTO: DTOject<ScanlationGroupAttributes>?
 ): ChapterEntity{
     return ChapterEntity(
         chapter = chapterDTO.attributes.chapter ?: "",
@@ -24,6 +24,6 @@ fun chapterDTOtoChapterEntity(
         mangaId = chapterDTO.relationships.firstOrNull {
             it.type == "manga"
         }?.id.toString(),
-        scanGroup = scanGroupDTO.attributes.name
+        scanGroup = scanGroupDTO?.attributes?.name
     )
 }
