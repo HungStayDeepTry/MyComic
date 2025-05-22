@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -43,49 +44,46 @@ fun HomeScreen(
     action: (HomePageAction) -> Unit,
     homeUIState: HomeUiState
 ) {
-    PullToRefreshLazyColumn(
-        items = homeUIState.mangas,
-        contents = { manga -> MangaCard(manga = manga, {}) },
+    PullToRefreshScaffold(
         isRefresh = homeUIState.isRefreshing,
         onRefresh = { action(HomePageAction.PullToRefresh(true)) },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        content = {
+            items(homeUIState.mangas){
+                manga -> MangaCard(manga = manga, {})
+            }
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <T> PullToRefreshLazyColumn(
-    items: List<T>,
-    contents: @Composable (T) -> Unit,
+fun PullToRefreshScaffold(
     isRefresh: Boolean,
-    onRefresh:() -> Unit,
-    modifier: Modifier,
-    lazyListState: LazyListState = rememberLazyListState()
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    lazyListState: LazyListState = rememberLazyListState(),
+    content: LazyListScope.() -> Unit
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     Box(
         modifier = modifier.nestedScroll(pullToRefreshState.nestedScrollConnection)
-    ){
+    ) {
         LazyColumn(
             state = lazyListState,
             contentPadding = PaddingValues(8.dp),
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(items.size){
-                contents(items[it])
-            }
-        }
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            content = content
+        )
 
-        if(pullToRefreshState.isRefreshing){
-            LaunchedEffect(true){
+        if (pullToRefreshState.isRefreshing) {
+            LaunchedEffect(true) {
                 onRefresh()
             }
         }
 
         LaunchedEffect(isRefresh) {
-            if(isRefresh){
+            if (isRefresh) {
                 pullToRefreshState.startRefresh()
             } else {
                 pullToRefreshState.endRefresh()
@@ -94,9 +92,7 @@ fun <T> PullToRefreshLazyColumn(
 
         PullToRefreshContainer(
             state = pullToRefreshState,
-            modifier = Modifier
-                .align(Alignment.TopCenter),
-
+            modifier = Modifier.align(Alignment.TopCenter)
         )
     }
 }

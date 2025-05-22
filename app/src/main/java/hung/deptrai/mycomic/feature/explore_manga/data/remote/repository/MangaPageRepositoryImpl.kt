@@ -276,6 +276,14 @@ class MangaPageRepositoryImpl @Inject constructor(
         emitAll(getMangaByLatestChaptersFromLocal())
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getPopularNewTitles(isRefresh: Boolean): Flow<List<MangaHome>> = flow{
+        if(isRefresh){
+            refreshPopularNewTitles()
+        }
+        emitAll(getPopularNewTitlesFromLocal())
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun refreshPopularNewTitles(){
