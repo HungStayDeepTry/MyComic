@@ -24,7 +24,7 @@ interface HomeMangaDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertManga(manga: HomeMangaEntity)
 
-    @Upsert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(mangaList: List<HomeMangaEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -38,11 +38,7 @@ interface HomeMangaDao {
 
     @Query(
             """
-        SELECT m.*, s.followCount
-        FROM manga m
-        INNER JOIN manga_statistic s ON m.id = s.mangaId
-        WHERE m.customType = 0
-        ORDER BY s.followCount DESC
+        SELECT * from manga where manga.customType = 0
         """
     )
     fun getPopularNewTitles(): Flow<List<HomeMangaEntity>>

@@ -24,9 +24,9 @@ import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.HomeMangaEnt
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.MangaTagCrossRef
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.TagEntity
 import hung.deptrai.mycomic.feature.explore_manga.data.remote.datasource.MangaPageDataSource
-import hung.deptrai.mycomic.feature.explore_manga.domain.ChapterHome
 import hung.deptrai.mycomic.feature.explore_manga.domain.MangaHome
 import hung.deptrai.mycomic.feature.explore_manga.domain.MangaPageRepository
+import hung.deptrai.mycomic.feature.explore_manga.domain.Type
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -36,6 +36,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class MangaPageRepositoryImpl @Inject constructor(
@@ -48,7 +51,16 @@ class MangaPageRepositoryImpl @Inject constructor(
 ) : MangaPageRepository{
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun fetchMangaPageInfo(isRefresh: Boolean): Flow<List<MangaHome>> {
-        return getLatestChapters(isRefresh)
+        return combine(
+            getLatestChapters(isRefresh),
+            getPopularNewTitles(isRefresh)
+        ) { latestList, popularList ->
+            // Gán type trước khi gộp
+            val latest = latestList.map { it.copy(customType = Type.LATEST_UPDATES) }
+            val popular = popularList.map { it.copy(customType = Type.POPULAR_NEW_TITLES) }
+
+            latest + popular // Gộp lại thành 1 list
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -96,8 +108,26 @@ class MangaPageRepositoryImpl @Inject constructor(
     private suspend fun popularNewTitles(page: Int): Result<List<Pair<HomeMangaEntity, List<TagEntity>>>, DataError.Network>{
         return withContext(Dispatchers.IO){
             val queryParameters = mutableMapOf<String, Any>()
-            queryParameters[MdConstants.SearchParameters.limit] = MdConstants.Limits.manga
+
+            queryParameters[MdConstants.SearchParameters.limit] = 10
             queryParameters[MdConstants.SearchParameters.offset] = MdUtil.getMangaListOffset(page)
+
+            // Thêm các include cần thiết
+            queryParameters["includes[]"] = listOf("cover_art", "artist", "author")
+
+            // Sắp xếp theo lượt theo dõi giảm dần
+            queryParameters["order[followedCount]"] = "desc"
+
+            // Các mức độ nội dung
+            queryParameters["contentRating[]"] = listOf("safe", "suggestive", "erotica", "pornographic")
+
+            // Chỉ lấy manga có chương
+            queryParameters["hasAvailableChapters"] = true
+
+            // createdAtSince = ngày hiện tại trừ đi 30 ngày, định dạng ISO 8601
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+            val oneMonthAgo = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30)
+            queryParameters["createdAtSince"] = oneMonthAgo.format(formatter)
 
             when (val rs = dataSource.popularNewTitles(ProxyRetrofitQueryMap(queryParameters))){
                 is Result.Success -> {
@@ -136,10 +166,7 @@ class MangaPageRepositoryImpl @Inject constructor(
                                 .filter { it.type == "author" }
                                 .mapNotNull { authorMap[it.id] }
 
-                            val coverArt = dto.relationships
-                                .firstOrNull { it.type == "cover_art" }
-                                ?.id
-                                ?.let { coverArtMap[it] }
+                            val coverArt = coverArtMap[dto.id]
 
                             val artists = dto.relationships
                                 .filter {
@@ -327,15 +354,20 @@ class MangaPageRepositoryImpl @Inject constructor(
                     localDataSource.getTagsByMangaIds(mangaIds)
                 ) { mangas, tagsByMangaId ->
 
-                    // Lấy chương có updatedAt mới nhất cho mỗi manga
+                    // Bước 1: Lấy chương mới nhất cho mỗi manga
                     val latestChapterByManga = chapters
                         .groupBy { it.mangaId }
-                        .mapValues { (_, list) ->
-                            list.maxByOrNull { it.updatedAt }
+                        .mapNotNull { (_, chapterList) ->
+                            chapterList.maxByOrNull { it.updatedAt }
                         }
 
-                    latestChapterByManga.mapNotNull { (mangaId, chapter) ->
-                        val manga = mangas.firstOrNull { it.id == mangaId } ?: return@mapNotNull null
+                    // Bước 2: Sắp xếp theo updatedAt giảm dần
+                    val sortedChapters = latestChapterByManga
+                        .sortedByDescending { it.updatedAt }
+
+                    // Bước 3: Map theo đúng thứ tự
+                    sortedChapters.mapNotNull { chapter ->
+                        val manga = mangas.firstOrNull { it.id == chapter.mangaId } ?: return@mapNotNull null
                         val tags = tagsByMangaId[manga.id] ?: emptyList()
 
                         MangaHome(
@@ -343,16 +375,18 @@ class MangaPageRepositoryImpl @Inject constructor(
                             title = manga.title,
                             authorName = manga.authorName,
                             artist = manga.artist,
-                            coverArt = manga.coverArtLink ?: "",
+                            coverArt = manga.coverArtLink.orEmpty(),
                             originalLang = manga.originalLang,
-                            lastUpdatedChapter = chapterEntitytoChapterHome(chapter!!),
-                            tags = tags.map { Tag(it.id, it.name, it.group) }
+                            lastUpdatedChapter = chapterEntitytoChapterHome(chapter),
+                            tags = tags.map { Tag(it.id, it.name, it.group) },
+                            customType = Type.LATEST_UPDATES
                         )
                     }
                 }
             }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getPopularNewTitlesFromLocal(): Flow<List<MangaHome>>{
         return localDataSource.getPopularNewTitles()
             .flatMapLatest { mangas ->
@@ -370,7 +404,8 @@ class MangaPageRepositoryImpl @Inject constructor(
                                 lastUpdatedChapter = null,
                                 tags = tagsByMangaId[manga.id]?.map { tagEntity ->
                                     Tag(tagEntity.id, tagEntity.name, tagEntity.group)
-                                } ?: emptyList()
+                                } ?: emptyList(),
+                                customType = Type.POPULAR_NEW_TITLES
                             )
                         }
                     }

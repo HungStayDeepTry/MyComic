@@ -10,6 +10,16 @@ data class MangaHome(
     val coverArt: String,
     val originalLang: String?,
     val tags: List<Tag>,
-    val lastUpdatedChapter: ChapterHome?
+    val lastUpdatedChapter: ChapterHome?,
+    val customType: Type
 )
 
+enum class Type {
+        POPULAR_NEW_TITLES,
+        LATEST_UPDATES,
+        STAFF_PICKS,
+        SELF_PUBLISHED,
+        FEATURE,
+        SEASONAL,
+        RECENTLY_ADDED
+}

@@ -6,8 +6,10 @@ import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.CustomType
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.HomeMangaEntity
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.MangaTagCrossRef
 import hung.deptrai.mycomic.feature.explore_manga.data.local.entity.TagEntity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class HomeLocalDataSourceImpl @Inject constructor(
@@ -61,26 +63,56 @@ class HomeLocalDataSourceImpl @Inject constructor(
     }
 
     override suspend fun upsertByType(list: List<HomeMangaEntity>, type: CustomType) {
-        dao.clearMangaByType(type)
-        dao.upsertAll(list)
+        withContext(Dispatchers.IO) {
+            try {
+                dao.clearMangaByType(type)
+                dao.upsertAll(list)
+            } catch (e: Exception) {
+                e.printStackTrace() // hoặc log nếu dùng Timber.d(e)
+            }
+        }
     }
 
     override suspend fun upsertChapter(list: List<ChapterEntity>) {
-        dao.clearChapterByType()
-        dao.upsertAllChapters(list)
+        withContext(Dispatchers.IO) {
+            try {
+                dao.clearChapterByType()
+                dao.upsertAllChapters(list)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     override suspend fun insertTags(tags: List<TagEntity>) {
-        dao.insertTags(tags)
+        withContext(Dispatchers.IO) {
+            try {
+                dao.insertTags(tags)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     override suspend fun insertMangaTagCrossRefs(refs: List<MangaTagCrossRef>, mangaIds: List<String>) {
-        dao.clearMangaTagCrossRefsByMangaIds(mangaIds)
-        dao.insertMangaTagCrossRefs(refs)
+        withContext(Dispatchers.IO) {
+            try {
+                dao.clearMangaTagCrossRefsByMangaIds(mangaIds)
+                dao.insertMangaTagCrossRefs(refs)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     override suspend fun upsertAllMangas(list: List<HomeMangaEntity>, customType: CustomType) {
-        dao.clearMangaByType(customType)
-        dao.upsertAll(list)
+        withContext(Dispatchers.IO) {
+            try {
+                dao.clearMangaByType(customType)
+                dao.upsertAll(list)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }

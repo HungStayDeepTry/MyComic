@@ -89,19 +89,23 @@ fun mangaDTOtoMangaEntity(
     artistDTO: List<DTOject<AuthorAttributes>>? = null,
     statisticDTO: MangaStatisticDTO? = null,
     customType: Int
-): Pair<HomeMangaEntity, List<TagEntity>>{
+): Pair<HomeMangaEntity, List<TagEntity>> {
     val authors = authorDTO?.map {
         it.attributes.name ?: ""
     }
+    Log.d("MangaMapper", "Authors: $authors")
 
     val artist = artistDTO?.map {
         it.attributes.name ?: ""
     }
+    Log.d("MangaMapper", "Artists: $artist")
+
     val coverArtUrl = if (coverArtDTO?.fileName != null) {
         "https://uploads.mangadex.org/covers/${mangaDTO.id}/${coverArtDTO.fileName}"
     } else {
         ""
     }
+    Log.d("MangaMapper", "Cover Art URL: $coverArtUrl")
 
     val tags = mangaDTO.attributes.tags.map { tagDTO ->
         TagEntity(
@@ -110,23 +114,47 @@ fun mangaDTOtoMangaEntity(
             group = tagDTO.attributes.group
         )
     }
+    Log.d("MangaMapper", "Tags: $tags")
+
+    val title = mangaDTO.attributes.title.en
+    Log.d("MangaMapper", "Title: $title")
+
+    val commentCount = statisticDTO?.comments?.repliesCount ?: 0
+    Log.d("MangaMapper", "Comment count: $commentCount")
+
+    val originalLang = mangaDTO.attributes.originalLanguage
+    Log.d("MangaMapper", "Original language: $originalLang")
+
+    val contentRating = mangaDTO.attributes.contentRating
+    Log.d("MangaMapper", "Content rating: $contentRating")
+
+    val createdAt = parseDateToMillis(mangaDTO.attributes.createdAt)
+    Log.d("MangaMapper", "Created at (millis): $createdAt")
+
+    val latestUploadedChapter = mangaDTO.attributes.latestUploadedChapter
+    Log.d("MangaMapper", "Latest uploaded chapter: $latestUploadedChapter")
+
+    Log.d("MangaMapper", "Type: $customType")
+
+    Log.d("MangaMapper", "-----------------------------------")
 
     val homeMG = HomeMangaEntity(
         id = mangaDTO.id,
-        title = mangaDTO.attributes.title.en,
-        commentCount = statisticDTO?.comments?.repliesCount ?: 0,
-        originalLang = mangaDTO.attributes.originalLanguage,
+        title = title,
+        commentCount = commentCount,
+        originalLang = originalLang,
         authorName = authors?.joinToString(", ") ?: "",
-        artist = artist?.joinToString(", ") ?: "" ,
-        contentRating = mangaDTO.attributes.contentRating,
-        createdAt = parseDateToMillis(mangaDTO.attributes.createdAt),
-        latestUploadedChapter = mangaDTO.attributes.latestUploadedChapter,
+        artist = artist?.joinToString(", ") ?: "",
+        contentRating = contentRating,
+        createdAt = createdAt,
+        latestUploadedChapter = latestUploadedChapter,
         coverArtLink = coverArtUrl,
         customType = customType
     )
+    Log.d("MangaMapper", "HomeMangaEntity created: $homeMG")
+
     return Pair(homeMG, tags)
 }
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun parseDateToMillis(dateStr: String): Long {

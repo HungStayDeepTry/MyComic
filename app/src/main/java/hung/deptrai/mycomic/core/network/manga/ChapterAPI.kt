@@ -11,6 +11,6 @@ import retrofit2.http.Query
 interface ChapterAPI {
     @GET("${MdConstants.Api.chapter}?order[readableAt]=desc")
     suspend fun getLatestChapters(
-        @Query("limit") limit: Int = 10
+        @Query("limit") limit: Int = 20
     ) : Response<JsonResponse<DTOject<ChapterDTO>>>
 }

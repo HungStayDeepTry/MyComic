@@ -5,7 +5,6 @@ import androidx.annotation.RequiresApi
 
 class ProxyRetrofitQueryMap(val m: MutableMap<String, Any>) : HashMap<String, Any>(m) {
     override val entries: MutableSet<MutableMap.MutableEntry<String, Any>>
-        @RequiresApi(Build.VERSION_CODES.GINGERBREAD)
         get() {
             val originSet: Set<Map.Entry<String?, Any?>> = m.entries
             val newSet: MutableSet<MutableMap.MutableEntry<String, Any>> = HashSet()
