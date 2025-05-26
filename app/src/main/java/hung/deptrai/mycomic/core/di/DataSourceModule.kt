@@ -8,6 +8,8 @@ import hung.deptrai.mycomic.core.data.remote.datasource.AuthorDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.AuthorDataSourceImpl
 import hung.deptrai.mycomic.core.data.remote.datasource.ChapterDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.ChapterDataSourceImpl
+import hung.deptrai.mycomic.core.data.remote.datasource.MangaDataSource
+import hung.deptrai.mycomic.core.data.remote.datasource.MangaDataSourceImpl
 import hung.deptrai.mycomic.core.data.remote.datasource.ScanlationGroupDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.ScanlationGroupDataSourceImpl
 import hung.deptrai.mycomic.core.data.remote.datasource.StatisticDataSource
@@ -42,4 +44,9 @@ abstract class DataSourceModule {
         impl: AuthorDataSourceImpl
     ): AuthorDataSource
 
+    @Binds
+    @Singleton
+    abstract fun bindMangaDataSource(
+        impl: MangaDataSourceImpl
+    ): MangaDataSource
 }
