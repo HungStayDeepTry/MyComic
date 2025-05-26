@@ -46,7 +46,7 @@ fun MangaCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 8.dp),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -89,7 +89,8 @@ fun MangaCard(
                 text = manga.title ?: "",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             // Row 2: Vol + chap + title và comment
@@ -123,7 +124,8 @@ fun MangaCard(
                         ).joinToString(" "),
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
@@ -140,7 +142,8 @@ fun MangaCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = manga.lastUpdatedChapter?.commentCount?.toString() ?: "0",
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
@@ -161,13 +164,15 @@ fun MangaCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = manga.lastUpdatedChapter?.scanlationGroup ?: "No Group",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
                 Text(
                     text = getTimeAgoFromIsoDate(manga.lastUpdatedChapter?.updatedAt ?: ""),
-                    style = MaterialTheme.typography.labelSmall
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }

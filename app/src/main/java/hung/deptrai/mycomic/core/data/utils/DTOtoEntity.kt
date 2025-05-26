@@ -18,7 +18,7 @@ fun chapterDTOtoChapterEntity(
         id = chapterDTO.id,
         commentCount = statisticDTO.comments?.repliesCount,
         translatedLang = chapterDTO.attributes.translatedLanguage ?: "",
-        updatedAt = chapterDTO.attributes.updatedAt ?: "",
+        updatedAt = chapterDTO.attributes.readableAt ?: "",
         title = chapterDTO.attributes.title,
         volume = chapterDTO.attributes.volume ?: "",
         mangaId = chapterDTO.relationships.firstOrNull {

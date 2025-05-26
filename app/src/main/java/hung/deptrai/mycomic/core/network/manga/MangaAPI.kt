@@ -39,12 +39,12 @@ interface MangaAPI {
     )
     suspend fun popularNewReleases(
         @QueryMap options: ProxyRetrofitQueryMap
-    ): Response<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject1<hung.deptrai.mycomic.core.data.remote.dto.Attributes>>>
+    ): Response<JsonResponse<DTOject1<Attributes>>>
 
     @GET(
         "${MdConstants.Api.list}/{id}"
     )
     suspend fun viewList(
         @Path("id") id: String
-    ): Response<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonFewestResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.ListAttributesDto>>>
+    ): Response<JsonFewestResponse<DTOject<ListAttributesDto>>>
 }

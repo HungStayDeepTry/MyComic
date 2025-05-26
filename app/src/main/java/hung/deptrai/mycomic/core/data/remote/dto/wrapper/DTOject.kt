@@ -19,3 +19,5 @@ data class DTOject1<T>(
     val relationships: List<RelationshipDTO>,
     val type: String
 )
+
+// need to refactor

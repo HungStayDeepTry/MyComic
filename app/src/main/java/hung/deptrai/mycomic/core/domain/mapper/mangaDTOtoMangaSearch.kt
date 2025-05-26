@@ -136,7 +136,6 @@ fun mangaDTOtoMangaEntity(
 
     Log.d("MangaMapper", "Type: $customType")
 
-    Log.d("MangaMapper", "-----------------------------------")
 
     val homeMG = HomeMangaEntity(
         id = mangaDTO.id,
@@ -152,6 +151,8 @@ fun mangaDTOtoMangaEntity(
         customType = customType
     )
     Log.d("MangaMapper", "HomeMangaEntity created: $homeMG")
+
+    Log.d("MangaMapper", "-----------------------------------")
 
     return Pair(homeMG, tags)
 }

@@ -7,9 +7,14 @@ import hung.deptrai.constants.MdConstants
 import hung.deptrai.core.network.ProxyRetrofitQueryMap
 import hung.deptrai.mycomic.core.data.remote.datasource.AuthorDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.ChapterDataSource
+import hung.deptrai.mycomic.core.data.remote.datasource.MangaDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.ScanlationGroupDataSource
 import hung.deptrai.mycomic.core.data.remote.datasource.StatisticDataSource
+import hung.deptrai.mycomic.core.data.remote.dto.Attributes
 import hung.deptrai.mycomic.core.data.remote.dto.IncludesAttributesDto
+import hung.deptrai.mycomic.core.data.remote.dto.ListAttributesDto
+import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject
+import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject1
 import hung.deptrai.mycomic.core.data.utils.MdUtil
 import hung.deptrai.mycomic.core.data.utils.chapterDTOtoChapterEntity
 import hung.deptrai.mycomic.core.domain.exception.DataError
@@ -47,8 +52,9 @@ class MangaPageRepositoryImpl @Inject constructor(
     private val authorDataSource: AuthorDataSource,
     private val chapterDataSource: ChapterDataSource,
     private val scanlationGroupDataSource: ScanlationGroupDataSource,
-    private val localDataSource: HomeLocalDataSource
-) : MangaPageRepository{
+    private val localDataSource: HomeLocalDataSource,
+    private val mangaDataSource: MangaDataSource
+) : MangaPageRepository {
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun fetchMangaPageInfo(isRefresh: Boolean): Flow<List<MangaHome>> {
         return combine(
@@ -64,7 +70,7 @@ class MangaPageRepositoryImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private suspend fun recentlyAdded(page: Int): Result<List<Pair<HomeMangaEntity, List<TagEntity>>>, DataError.Network>    {
+    private suspend fun recentlyAdded(page: Int): Result<List<Pair<HomeMangaEntity, List<TagEntity>>>, DataError.Network> {
         return withContext(Dispatchers.IO) {
             val queryParameters = mutableMapOf<String, Any>()
             queryParameters[MdConstants.SearchParameters.limit] = MdConstants.Limits.manga
@@ -105,8 +111,8 @@ class MangaPageRepositoryImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private suspend fun popularNewTitles(page: Int): Result<List<Pair<HomeMangaEntity, List<TagEntity>>>, DataError.Network>{
-        return withContext(Dispatchers.IO){
+    private suspend fun popularNewTitles(page: Int): Result<List<Pair<HomeMangaEntity, List<TagEntity>>>, DataError.Network> {
+        return withContext(Dispatchers.IO) {
             val queryParameters = mutableMapOf<String, Any>()
 
             queryParameters[MdConstants.SearchParameters.limit] = 10
@@ -119,7 +125,8 @@ class MangaPageRepositoryImpl @Inject constructor(
             queryParameters["order[followedCount]"] = "desc"
 
             // Các mức độ nội dung
-            queryParameters["contentRating[]"] = listOf("safe", "suggestive", "erotica", "pornographic")
+            queryParameters["contentRating[]"] =
+                listOf("safe", "suggestive", "erotica", "pornographic")
 
             // Chỉ lấy manga có chương
             queryParameters["hasAvailableChapters"] = true
@@ -129,7 +136,7 @@ class MangaPageRepositoryImpl @Inject constructor(
             val oneMonthAgo = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30)
             queryParameters["createdAtSince"] = oneMonthAgo.format(formatter)
 
-            when (val rs = dataSource.popularNewTitles(ProxyRetrofitQueryMap(queryParameters))){
+            when (val rs = dataSource.popularNewTitles(ProxyRetrofitQueryMap(queryParameters))) {
                 is Result.Success -> {
                     val res = rs.data.data
                     if (res.isEmpty()) return@withContext Result.Success(emptyList())
@@ -154,10 +161,10 @@ class MangaPageRepositoryImpl @Inject constructor(
                     val author = authorDataSource.getAuthorById(authorIds)
                     val artist = authorDataSource.getAuthorById(artistIds)
 
-                    if(
+                    if (
                         author is Result.Success &&
                         artist is Result.Success
-                    ){
+                    ) {
                         val authorMap = author.data.data.associateBy { it.id }
                         val artistMap = artist.data.data.associateBy { it.id }
 
@@ -177,12 +184,17 @@ class MangaPageRepositoryImpl @Inject constructor(
                                 }
 
                             if (coverArt != null) {
-                                mangaDTOtoMangaEntity(dto, coverArt, authors, artists, customType = 0)
+                                mangaDTOtoMangaEntity(
+                                    dto,
+                                    coverArt,
+                                    authors,
+                                    artists,
+                                    customType = 0
+                                )
                             } else null
                         }
                         Result.Success(comics)
-                    }
-                    else{
+                    } else {
                         // Ưu tiên lỗi có trước
                         listOf(author, artist)
                             .firstOrNull()
@@ -191,6 +203,7 @@ class MangaPageRepositoryImpl @Inject constructor(
                         Result.Error(DataError.Network.UNKNOWN)
                     }
                 }
+
                 is Result.Error -> {
                     Result.Error(rs.error)
                 }
@@ -206,29 +219,30 @@ class MangaPageRepositoryImpl @Inject constructor(
                     val rs = res.data.data
                     val chapterIds = rs.map { it.id }
                     val scanlationGroupIds = rs.mapNotNull {
-                        it.relationships.firstOrNull{
+                        it.relationships.firstOrNull {
                             it.type == "scanlation_group"
                         }?.id
                     }
                     val statisticRes = statisticDs.getStatisticsForChapterByIds(chapterIds)
-                    val scanGroupRes = scanlationGroupDataSource.getScanlationGroup(scanlationGroupIds)
-                    if(statisticRes is Result.Success && scanGroupRes is Result.Success) {
-                            val statMap = statisticRes.data.statistics
-                            val scanMap = scanGroupRes.data.data.associateBy { it.id }
-                            val chapters = rs.mapNotNull { dto ->
-                                val scanGroups = dto.relationships
-                                    .firstOrNull { it.type == "scanlation_group" }
-                                    ?.id
-                                    ?.let { scanMap[it] }
-                                val statistic = statMap[dto.id]
-                                if(statistic != null){
-                                    chapterDTOtoChapterEntity(dto, statistic, scanGroups)
-                                } else{
-                                    null
-                                }
+                    val scanGroupRes =
+                        scanlationGroupDataSource.getScanlationGroup(scanlationGroupIds)
+                    if (statisticRes is Result.Success && scanGroupRes is Result.Success) {
+                        val statMap = statisticRes.data.statistics
+                        val scanMap = scanGroupRes.data.data.associateBy { it.id }
+                        val chapters = rs.mapNotNull { dto ->
+                            val scanGroups = dto.relationships
+                                .firstOrNull { it.type == "scanlation_group" }
+                                ?.id
+                                ?.let { scanMap[it] }
+                            val statistic = statMap[dto.id]
+                            if (statistic != null) {
+                                chapterDTOtoChapterEntity(dto, statistic, scanGroups)
+                            } else {
+                                null
                             }
-                            Result.Success(chapters)
-                    } else{
+                        }
+                        Result.Success(chapters)
+                    } else {
                         listOf(scanGroupRes, scanGroupRes)
                             .firstOrNull()
                             ?.let { return@let it as Result<List<MangaHome>, DataError.Network> }
@@ -236,13 +250,14 @@ class MangaPageRepositoryImpl @Inject constructor(
                         Result.Error(DataError.Network.UNKNOWN)
                     }
                 }
+
                 is Result.Error -> Result.Error(res.error)
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getLatestChapterWithManga(mangaIds: List<String>): Result<List<HomeMangaEntity>, DataError.Network>{
+    suspend fun getLatestChapterWithManga(mangaIds: List<String>): Result<List<HomeMangaEntity>, DataError.Network> {
         return withContext(Dispatchers.IO) {
             when (val res = dataSource.getMangaByIds(mangaIds)) {
                 is Result.Success -> {
@@ -304,8 +319,8 @@ class MangaPageRepositoryImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun getPopularNewTitles(isRefresh: Boolean): Flow<List<MangaHome>> = flow{
-        if(isRefresh){
+    fun getPopularNewTitles(isRefresh: Boolean): Flow<List<MangaHome>> = flow {
+        if (isRefresh) {
             refreshPopularNewTitles()
         }
         emitAll(getPopularNewTitlesFromLocal())
@@ -313,8 +328,8 @@ class MangaPageRepositoryImpl @Inject constructor(
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun refreshPopularNewTitles(){
-        when(val result = popularNewTitles(1)){
+    suspend fun refreshPopularNewTitles() {
+        when (val result = popularNewTitles(1)) {
             is Result.Success -> {
                 val mangaList = result.data.map { it.first }
                 val tagList = result.data.flatMap { it.second }.distinctBy { it.id }
@@ -367,7 +382,8 @@ class MangaPageRepositoryImpl @Inject constructor(
 
                     // Bước 3: Map theo đúng thứ tự
                     sortedChapters.mapNotNull { chapter ->
-                        val manga = mangas.firstOrNull { it.id == chapter.mangaId } ?: return@mapNotNull null
+                        val manga = mangas.firstOrNull { it.id == chapter.mangaId }
+                            ?: return@mapNotNull null
                         val tags = tagsByMangaId[manga.id] ?: emptyList()
 
                         MangaHome(
@@ -387,7 +403,7 @@ class MangaPageRepositoryImpl @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getPopularNewTitlesFromLocal(): Flow<List<MangaHome>>{
+    fun getPopularNewTitlesFromLocal(): Flow<List<MangaHome>> {
         return localDataSource.getPopularNewTitles()
             .flatMapLatest { mangas ->
                 val mangaIds = mangas.map { it.id }
@@ -399,7 +415,7 @@ class MangaPageRepositoryImpl @Inject constructor(
                                 title = manga.title,
                                 authorName = manga.authorName,
                                 artist = manga.artist,
-                                coverArt = manga.coverArtLink?:"",
+                                coverArt = manga.coverArtLink ?: "",
                                 originalLang = manga.originalLang,
                                 lastUpdatedChapter = null,
                                 tags = tagsByMangaId[manga.id]?.map { tagEntity ->
@@ -412,16 +428,99 @@ class MangaPageRepositoryImpl @Inject constructor(
             }
     }
 
+    private suspend fun getPairListCustomListDTO(): Result<List<Pair<Int, List<DTOject1<Attributes>>>>, DataError.Network> {
+        return withContext(Dispatchers.IO) {
+            val staffPickResult = dataSource.fetchCustomList(MdConstants.staffPicksId)
+            val seasonalResult = dataSource.fetchCustomList(MdConstants.currentSeasonalId)
+            val featureResult = dataSource.fetchCustomList(MdConstants.nekoDevPicksId)
 
-//    override fun observeMangaByType(type: CustomType): Flow<List<HomeMangaEntity>>{
-//        return when(type){
-//            CustomType.POPULAR_NEW_TITLES -> localDataSource.getPopularNewTitles()
-//            CustomType.RECENTLY_ADDED -> localDataSource.getRecentlyAdded(Int.MAX_VALUE)
-//            CustomType.STAFF_PICKS -> localDataSource.getStaffPicks(Int.MAX_VALUE)
-//            CustomType.SELF_PUBLISHED -> localDataSource.getSelfPublished(Int.MAX_VALUE)
-//            CustomType.FEATURE -> localDataSource.getFeature(Int.MAX_VALUE)
-//            CustomType.SEASONAL -> localDataSource.getSeasonal(Int.MAX_VALUE)
-//            CustomType.LATEST_UPDATES -> localDataSource.getMangaByIds()
-//        }
-//    }
+            if (staffPickResult is Result.Success &&
+                seasonalResult is Result.Success &&
+                featureResult is Result.Success
+            ) {
+
+                fun extractMangaIds(listDto: DTOject<ListAttributesDto>): List<String> {
+                    return listDto.relationships.filter { it.type == "manga" }.map { it.id }
+                }
+
+                val staffPickIds = extractMangaIds(staffPickResult.data.data)
+                val seasonalIds = extractMangaIds(seasonalResult.data.data)
+                val featureIds = extractMangaIds(featureResult.data.data)
+
+                val staffPickManga = dataSource.getMangaByIds(staffPickIds)
+                val seasonalManga = dataSource.getMangaByIds(seasonalIds)
+                val featureManga = dataSource.getMangaByIds(featureIds)
+
+                if (
+                    staffPickManga is Result.Success &&
+                    seasonalManga is Result.Success &&
+                    featureManga is Result.Success
+                ) {
+                    val customTypeStaffPick = 2
+                    val customTypeSeasonal = 5
+                    val customTypeFeature = 4
+
+                    val resultList = listOf(
+                        customTypeStaffPick to staffPickManga.data.data,
+                        customTypeSeasonal to seasonalManga.data.data,
+                        customTypeFeature to featureManga.data.data
+                    )
+
+                    Result.Success(resultList)
+                } else {
+                    Result.Error(DataError.Network.UNKNOWN)
+                }
+            } else {
+                Result.Error(DataError.Network.UNKNOWN)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private suspend fun getCustomList(): Result<List<HomeMangaEntity>, DataError.Network> {
+        return when (val pairResult = getPairListCustomListDTO()) {
+            is Result.Success -> {
+                val pairList = pairResult.data
+
+                val allMangaList = pairList.flatMap { (type, list) ->
+                    list.map { type to it }
+                }
+
+                if (allMangaList.isEmpty()) return Result.Success(emptyList())
+
+                val mangaIds = allMangaList.map { it.second.id }
+
+                val statRes = statisticDs.getStatisticsForMangaByIds(mangaIds)
+
+                if (statRes is Result.Success) {
+                    val statMap = statRes.data.statistics
+
+                    val resultList = allMangaList.mapNotNull { (customType, mangaDTO) ->
+                        val coverArt: IncludesAttributesDto? = mangaDTO.relationships
+                            .firstOrNull { it.type == "cover_art" }
+                            ?.attributes
+
+                        val stat = statMap[mangaDTO.id]
+
+                        if (coverArt != null && stat != null) {
+                            val (entity, _) = mangaDTOtoMangaEntity(
+                                mangaDTO = mangaDTO,
+                                coverArtDTO = coverArt,
+                                statisticDTO = stat,
+                                customType = customType
+                            )
+                            entity
+                        } else null
+                    }
+
+                    Result.Success(resultList)
+                } else {
+                    Result.Error((statRes as Result.Error).error)
+                }
+            }
+
+            is Result.Error -> Result.Error(pairResult.error)
+        }
+    }
+
 }

@@ -28,7 +28,7 @@ class MangaPageDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchList(listId: String): Result<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonFewestResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.ListAttributesDto>>, DataError.Network> {
+    override suspend fun fetchCustomList(listId: String): Result<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonFewestResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.ListAttributesDto>>, DataError.Network> {
         return safeApiCall {
             api.viewList(listId)
         }
