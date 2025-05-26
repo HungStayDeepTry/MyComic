@@ -59,13 +59,17 @@ class MangaPageRepositoryImpl @Inject constructor(
     override suspend fun fetchMangaPageInfo(isRefresh: Boolean): Flow<List<MangaHome>> {
         return combine(
             getLatestChapters(isRefresh),
-            getPopularNewTitles(isRefresh)
-        ) { latestList, popularList ->
+            getPopularNewTitles(isRefresh),
+            getCustomList(isRefresh)
+        ) { latestList, popularList, customList ->
             // Gán type trước khi gộp
             val latest = latestList.map { it.copy(customType = Type.LATEST_UPDATES) }
             val popular = popularList.map { it.copy(customType = Type.POPULAR_NEW_TITLES) }
+            val staffPick = customList.map { it.copy(customType = Type.STAFF_PICKS) }.filter { it.customType == Type.STAFF_PICKS }
+            val feature = customList.map { it.copy(customType = Type.FEATURE) }.filter { it.customType == Type.FEATURE }
+            val seasonal = customList.map { it.copy(customType = Type.SEASONAL) }.filter { it.customType == Type.SEASONAL }
 
-            latest + popular // Gộp lại thành 1 list
+            latest + popular + staffPick + feature + seasonal // Gộp lại thành 1 list
         }
     }
 
@@ -198,7 +202,9 @@ class MangaPageRepositoryImpl @Inject constructor(
                         // Ưu tiên lỗi có trước
                         listOf(author, artist)
                             .firstOrNull()
-                            ?.let { return@let it as Result<List<Pair<MangaHome, TagEntity>>, DataError.Network> }
+                            ?.let {
+                                return@let it as Result<List<Pair<MangaHome, TagEntity>>, DataError.Network>
+                            }
 
                         Result.Error(DataError.Network.UNKNOWN)
                     }
@@ -326,6 +332,14 @@ class MangaPageRepositoryImpl @Inject constructor(
         emitAll(getPopularNewTitlesFromLocal())
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getCustomList(isRefresh: Boolean): Flow<List<MangaHome>> = flow {
+        if(isRefresh){
+            refreshCustomList()
+        }
+        emitAll(getCustomListFromLocal())
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun refreshPopularNewTitles() {
@@ -344,6 +358,43 @@ class MangaPageRepositoryImpl @Inject constructor(
 
                 // Insert mangas
                 localDataSource.upsertAllMangas(mangaList, CustomType.POPULAR_NEW_TITLES)
+
+                // Insert tags
+                localDataSource.insertTags(tagList)
+
+                // Insert cross references
+                localDataSource.insertMangaTagCrossRefs(crossRefs, mangaList.map { it.id })
+            }
+
+            is Result.Error -> {
+                // Handle error if needed
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun refreshCustomList(){
+        when (val result = getCustomList()) {
+            is Result.Success -> {
+                val mangaList = result.data.map { it.first }
+                val tagList = result.data.flatMap { it.second }.distinctBy { it.id }
+                val crossRefs = result.data.flatMap { (manga, tags) ->
+                    tags.map { tag ->
+                        MangaTagCrossRef(
+                            mangaId = manga.id,
+                            tagId = tag.id
+                        )
+                    }
+                }
+
+                val staffPick = mangaList.filter { it.customType == 2 }
+                val feature = mangaList.filter { it.customType == 4 }
+                val seasonal = mangaList.filter { it.customType == 5 }
+
+                // Insert mangas
+                localDataSource.upsertAllMangas(feature, CustomType.FEATURE)
+                localDataSource.upsertAllMangas(staffPick, CustomType.STAFF_PICKS)
+                localDataSource.upsertAllMangas(seasonal, CustomType.SEASONAL)
 
                 // Insert tags
                 localDataSource.insertTags(tagList)
@@ -428,6 +479,43 @@ class MangaPageRepositoryImpl @Inject constructor(
             }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getCustomListFromLocal(): Flow<List<MangaHome>> {
+        val seasonalFlow = localDataSource.getSeasonal(10)
+            .map { list -> list.map { it to Type.SEASONAL } }
+
+        val staffPicksFlow = localDataSource.getStaffPicks(10)
+            .map { list -> list.map { it to Type.STAFF_PICKS } }
+
+        val featureFlow = localDataSource.getFeature(10)
+            .map { list -> list.map { it to Type.FEATURE } }
+
+        return combine(seasonalFlow, staffPicksFlow, featureFlow) { seasonal, staff, feature ->
+            seasonal + staff + feature // List<Pair<HomeMangaEntity, Type>>
+        }.flatMapLatest { mangaPairs ->
+            val mangaList = mangaPairs.map { it.first }
+            val mangaIds = mangaList.map { it.id }
+
+            localDataSource.getTagsByMangaIds(mangaIds).map { tagsByMangaId ->
+                mangaPairs.map { (manga, customType) ->
+                    MangaHome(
+                        id = manga.id,
+                        title = manga.title,
+                        authorName = manga.authorName,
+                        artist = manga.artist,
+                        coverArt = manga.coverArtLink ?: "",
+                        originalLang = manga.originalLang,
+                        lastUpdatedChapter = null,
+                        tags = tagsByMangaId[manga.id]?.map {
+                            Tag(it.id, it.name, it.group)
+                        } ?: emptyList(),
+                        customType = customType
+                    )
+                }
+            }
+        }
+    }
+
     private suspend fun getPairListCustomListDTO(): Result<List<Pair<Int, List<DTOject1<Attributes>>>>, DataError.Network> {
         return withContext(Dispatchers.IO) {
             val staffPickResult = dataSource.fetchCustomList(MdConstants.staffPicksId)
@@ -476,8 +564,10 @@ class MangaPageRepositoryImpl @Inject constructor(
         }
     }
 
+
+
     @RequiresApi(Build.VERSION_CODES.O)
-    private suspend fun getCustomList(): Result<List<HomeMangaEntity>, DataError.Network> {
+    private suspend fun getCustomList(): Result<List<Pair<HomeMangaEntity, List<TagEntity>>>, DataError.Network> {
         return when (val pairResult = getPairListCustomListDTO()) {
             is Result.Success -> {
                 val pairList = pairResult.data
@@ -503,13 +593,12 @@ class MangaPageRepositoryImpl @Inject constructor(
                         val stat = statMap[mangaDTO.id]
 
                         if (coverArt != null && stat != null) {
-                            val (entity, _) = mangaDTOtoMangaEntity(
+                            mangaDTOtoMangaEntity(
                                 mangaDTO = mangaDTO,
                                 coverArtDTO = coverArt,
                                 statisticDTO = stat,
                                 customType = customType
                             )
-                            entity
                         } else null
                     }
 
@@ -522,5 +611,6 @@ class MangaPageRepositoryImpl @Inject constructor(
             is Result.Error -> Result.Error(pairResult.error)
         }
     }
+
 
 }

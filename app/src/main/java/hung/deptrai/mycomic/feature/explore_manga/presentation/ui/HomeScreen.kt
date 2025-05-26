@@ -90,6 +90,7 @@ fun HomeScreen(
                     Text(
                         text = "Latest Updates",
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
@@ -159,9 +160,6 @@ fun PopularNewTitlesSection(
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val screenWidthPx = with(LocalDensity.current) {
-        LocalConfiguration.current.screenWidthDp.dp.toPx()
-    }
 
     var currentIndex by remember { mutableIntStateOf(0) }
 
@@ -223,7 +221,7 @@ fun PopularNewTitlesSection(
                 Text(
                     text = "Popular New Titles",
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = Color.White,
                     modifier = Modifier
                         .align(Alignment.TopStart) // Đặt text nằm trên cùng, bên trái
                         .padding(16.dp)

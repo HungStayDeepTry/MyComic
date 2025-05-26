@@ -137,7 +137,8 @@ fun MangaCard(
                     Icon(
                         painter = painterResource(R.drawable.ic_comment_24dp),
                         contentDescription = "Comment",
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
@@ -159,7 +160,8 @@ fun MangaCard(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_chapter_group_24dp),
                         contentDescription = "Group",
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
