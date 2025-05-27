@@ -60,16 +60,18 @@ class MangaPageRepositoryImpl @Inject constructor(
         return combine(
             getLatestChapters(isRefresh),
             getPopularNewTitles(isRefresh),
-            getCustomList(isRefresh)
-        ) { latestList, popularList, customList ->
+            getCustomList(isRefresh),
+            getRecentlyAdded(isRefresh)
+        ) { latestList, popularList, customList, recentlyAddedList ->
             // Gán type trước khi gộp
             val latest = latestList.map { it.copy(customType = Type.LATEST_UPDATES) }
             val popular = popularList.map { it.copy(customType = Type.POPULAR_NEW_TITLES) }
-            val staffPick = customList.map { it.copy(customType = Type.STAFF_PICKS) }.filter { it.customType == Type.STAFF_PICKS }
-            val feature = customList.map { it.copy(customType = Type.FEATURE) }.filter { it.customType == Type.FEATURE }
-            val seasonal = customList.map { it.copy(customType = Type.SEASONAL) }.filter { it.customType == Type.SEASONAL }
+            val staffPick = customList.filter { it.customType == Type.STAFF_PICKS }
+            val feature = customList.filter { it.customType == Type.FEATURE }
+            val seasonal = customList.filter { it.customType == Type.SEASONAL }
+            val recentlyAdded = recentlyAddedList.map { it.copy(customType = Type.RECENTLY_ADDED) }
 
-            latest + popular + staffPick + feature + seasonal // Gộp lại thành 1 list
+            latest + popular + staffPick + feature + seasonal + recentlyAdded // Gộp lại thành 1 list
         }
     }
 
@@ -151,8 +153,6 @@ class MangaPageRepositoryImpl @Inject constructor(
                         }?.attributes
                         dto.id to coverArt
                     }
-
-                    val mangaIds = res.map { it.id }
 
                     val authorIds = res
                         .flatMap { it.relationships.filter { it.type == "author" }.map { it.id } }
@@ -334,36 +334,42 @@ class MangaPageRepositoryImpl @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun getCustomList(isRefresh: Boolean): Flow<List<MangaHome>> = flow {
-        if(isRefresh){
+        if (isRefresh) {
             refreshCustomList()
         }
         emitAll(getCustomListFromLocal())
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getRecentlyAdded(isRefresh: Boolean): Flow<List<MangaHome>> = flow {
+        if (isRefresh) {
+            refreshRecentAdded()
+        }
+        emitAll(getMangaByRecentlyAddedFromLocal())
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun refreshRecentAdded() {
+        when (val result = recentlyAdded(1)) {
+            is Result.Success -> {
+                val (mangaList, tagList, crossRefs) = extractMangaData(result.data)
+
+                insertMangaWithTags(mangaList, tagList, crossRefs, CustomType.RECENTLY_ADDED)
+            }
+
+            is Result.Error -> {
+
+            }
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun refreshPopularNewTitles() {
         when (val result = popularNewTitles(1)) {
             is Result.Success -> {
-                val mangaList = result.data.map { it.first }
-                val tagList = result.data.flatMap { it.second }.distinctBy { it.id }
-                val crossRefs = result.data.flatMap { (manga, tags) ->
-                    tags.map { tag ->
-                        MangaTagCrossRef(
-                            mangaId = manga.id,
-                            tagId = tag.id
-                        )
-                    }
-                }
+                val (mangaList, tagList, crossRefs) = extractMangaData(result.data)
 
-                // Insert mangas
-                localDataSource.upsertAllMangas(mangaList, CustomType.POPULAR_NEW_TITLES)
-
-                // Insert tags
-                localDataSource.insertTags(tagList)
-
-                // Insert cross references
-                localDataSource.insertMangaTagCrossRefs(crossRefs, mangaList.map { it.id })
+                insertMangaWithTags(mangaList, tagList, crossRefs, CustomType.POPULAR_NEW_TITLES)
             }
 
             is Result.Error -> {
@@ -373,34 +379,20 @@ class MangaPageRepositoryImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun refreshCustomList(){
+    suspend fun refreshCustomList() {
         when (val result = getCustomList()) {
             is Result.Success -> {
-                val mangaList = result.data.map { it.first }
-                val tagList = result.data.flatMap { it.second }.distinctBy { it.id }
-                val crossRefs = result.data.flatMap { (manga, tags) ->
-                    tags.map { tag ->
-                        MangaTagCrossRef(
-                            mangaId = manga.id,
-                            tagId = tag.id
-                        )
-                    }
-                }
+                val (mangaList, tagList, crossRefs) = extractMangaData(result.data)
 
                 val staffPick = mangaList.filter { it.customType == 2 }
                 val feature = mangaList.filter { it.customType == 4 }
                 val seasonal = mangaList.filter { it.customType == 5 }
 
-                // Insert mangas
                 localDataSource.upsertAllMangas(feature, CustomType.FEATURE)
                 localDataSource.upsertAllMangas(staffPick, CustomType.STAFF_PICKS)
                 localDataSource.upsertAllMangas(seasonal, CustomType.SEASONAL)
 
-                // Insert tags
-                localDataSource.insertTags(tagList)
-
-                // Insert cross references
-                localDataSource.insertMangaTagCrossRefs(crossRefs, mangaList.map { it.id })
+                insertMangaWithTags(mangaList, tagList, crossRefs)
             }
 
             is Result.Error -> {
@@ -446,10 +438,38 @@ class MangaPageRepositoryImpl @Inject constructor(
                             originalLang = manga.originalLang,
                             lastUpdatedChapter = chapterEntitytoChapterHome(chapter),
                             tags = tags.map { Tag(it.id, it.name, it.group) },
-                            customType = Type.LATEST_UPDATES
+                            customType = Type.LATEST_UPDATES,
+                            contentRating = manga.contentRating
                         )
                     }
                 }
+            }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun getMangaByRecentlyAddedFromLocal(): Flow<List<MangaHome>> {
+        return localDataSource.getRecentlyAdded(10)
+            .flatMapLatest { mangas ->
+                val mangaIds = mangas.map { it.id }
+                localDataSource.getTagsByMangaIds(mangaIds)
+                    .map { tagsByMangaId ->
+                        mangas.map { manga ->
+                            MangaHome(
+                                id = manga.id,
+                                title = manga.title,
+                                authorName = manga.authorName,
+                                artist = manga.artist,
+                                coverArt = manga.coverArtLink ?: "",
+                                originalLang = manga.originalLang,
+                                lastUpdatedChapter = null,
+                                tags = tagsByMangaId[manga.id]?.map { tagEntity ->
+                                    Tag(tagEntity.id, tagEntity.name, tagEntity.group)
+                                } ?: emptyList(),
+                                customType = Type.POPULAR_NEW_TITLES,
+                                contentRating = manga.contentRating ?: ""
+                            )
+                        }
+                    }
             }
     }
 
@@ -472,7 +492,8 @@ class MangaPageRepositoryImpl @Inject constructor(
                                 tags = tagsByMangaId[manga.id]?.map { tagEntity ->
                                     Tag(tagEntity.id, tagEntity.name, tagEntity.group)
                                 } ?: emptyList(),
-                                customType = Type.POPULAR_NEW_TITLES
+                                customType = Type.POPULAR_NEW_TITLES,
+                                contentRating = manga.contentRating
                             )
                         }
                     }
@@ -509,7 +530,8 @@ class MangaPageRepositoryImpl @Inject constructor(
                         tags = tagsByMangaId[manga.id]?.map {
                             Tag(it.id, it.name, it.group)
                         } ?: emptyList(),
-                        customType = customType
+                        customType = customType,
+                        contentRating = manga.contentRating
                     )
                 }
             }
@@ -565,7 +587,6 @@ class MangaPageRepositoryImpl @Inject constructor(
     }
 
 
-
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun getCustomList(): Result<List<Pair<HomeMangaEntity, List<TagEntity>>>, DataError.Network> {
         return when (val pairResult = getPairListCustomListDTO()) {
@@ -613,4 +634,30 @@ class MangaPageRepositoryImpl @Inject constructor(
     }
 
 
+    private fun extractMangaData(data: List<Pair<HomeMangaEntity, List<TagEntity>>>): Triple<List<HomeMangaEntity>, List<TagEntity>, List<MangaTagCrossRef>> {
+        val mangaList = data.map { it.first }
+        val tagList = data.flatMap { it.second }.distinctBy { it.id }
+        val crossRefs = data.flatMap { (manga, tags) ->
+            tags.map { tag ->
+                MangaTagCrossRef(
+                    mangaId = manga.id,
+                    tagId = tag.id
+                )
+            }
+        }
+        return Triple(mangaList, tagList, crossRefs)
+    }
+
+    private suspend fun insertMangaWithTags(
+        mangaList: List<HomeMangaEntity>,
+        tagList: List<TagEntity>,
+        crossRefs: List<MangaTagCrossRef>,
+        type: CustomType? = null
+    ) {
+        type?.let {
+            localDataSource.upsertAllMangas(mangaList, it)
+        }
+        localDataSource.insertTags(tagList)
+        localDataSource.insertMangaTagCrossRefs(crossRefs, mangaList.map { it.id })
+    }
 }

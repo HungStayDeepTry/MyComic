@@ -6,10 +6,8 @@ import androidx.annotation.RequiresApi
 import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject
 //import hung.deptrai.mycomic.core.domain.model.MangaEntity
 import hung.deptrai.mycomic.core.data.remote.dto.Attributes
-import hung.deptrai.mycomic.core.data.remote.dto.ChapterDTO
 import hung.deptrai.mycomic.core.data.remote.dto.IncludesAttributesDto
 import hung.deptrai.mycomic.core.data.remote.dto.author.AuthorAttributes
-import hung.deptrai.mycomic.core.data.remote.dto.scanlationGroup.ScanlationGroupAttributes
 import hung.deptrai.mycomic.core.data.remote.dto.statistic.MangaStatisticDTO
 import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject1
 import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
@@ -146,7 +144,7 @@ fun mangaDTOtoMangaEntity(
         artist = artist?.joinToString(", ") ?: "",
         contentRating = contentRating,
         createdAt = createdAt,
-        latestUploadedChapter = latestUploadedChapter,
+        latestUploadedChapter = latestUploadedChapter ?: "",
         coverArtLink = coverArtUrl,
         customType = customType
     )

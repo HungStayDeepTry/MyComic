@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,12 +14,14 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -46,11 +49,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import hung.deptrai.mycomic.R
@@ -74,7 +79,18 @@ fun HomeScreen(
             val popularManga =
                 homeUIState.mangas.filter { it.customType == Type.POPULAR_NEW_TITLES }
             val latestManga = homeUIState.mangas.filter { it.customType == Type.LATEST_UPDATES }
-
+            val staffPick = homeUIState.mangas.filter {
+                it.customType == Type.STAFF_PICKS
+            }
+            val feature = homeUIState.mangas.filter {
+                it.customType == Type.FEATURE
+            }
+            val seasonal = homeUIState.mangas.filter {
+                it.customType == Type.SEASONAL
+            }
+            val recentlyAdded = homeUIState.mangas.filter {
+                it.customType == Type.RECENTLY_ADDED
+            }
             // Header for Popular
 
             if (popularManga.isNotEmpty()) {
@@ -89,8 +105,9 @@ fun HomeScreen(
                 ) {
                     Text(
                         text = "Latest Updates",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
@@ -102,6 +119,112 @@ fun HomeScreen(
             ) {
                 latestManga.take(5).forEach { manga ->
                     MangaCard(manga = manga, { /* action */ })
+                }
+            }
+            if(staffPick.isNotEmpty()){
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    Modifier.padding(start = 16.dp)
+                ) {
+                    Text(
+                        text = "Staff Picks",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Row (
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentWidth()
+                    .horizontalScroll(rememberScrollState())
+            ){
+                staffPick.take(10).forEach {
+                    CustomListItem(it) {
+
+                    }
+                }
+            }
+
+            if(feature.isNotEmpty()){
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    Modifier.padding(start = 16.dp)
+                ) {
+                    Text(
+                        text = "Feature By Supporters",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Row (
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentWidth()
+                    .horizontalScroll(rememberScrollState())
+            ){
+                feature.take(10).forEach {
+                    CustomListItem(it) {
+
+                    }
+                }
+            }
+
+            if(seasonal.isNotEmpty()){
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    Modifier.padding(start = 16.dp)
+                ) {
+                    Text(
+                        text = "Seasonal: Winter 2025",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Row (
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentWidth()
+                    .horizontalScroll(rememberScrollState())
+            ){
+                seasonal.take(10).forEach {
+                    CustomListItem(it) {
+
+                    }
+                }
+            }
+            if(recentlyAdded.isNotEmpty()){
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    Modifier.padding(start = 16.dp)
+                ) {
+                    Text(
+                        text = "Recently Added",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Row (
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentWidth()
+                    .horizontalScroll(rememberScrollState())
+            ){
+                recentlyAdded.take(10).forEach {
+                    CustomListItem(it) {
+
+                    }
                 }
             }
         }
@@ -220,8 +343,9 @@ fun PopularNewTitlesSection(
                 }
                 Text(
                     text = "Popular New Titles",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .align(Alignment.TopStart) // Đặt text nằm trên cùng, bên trái
                         .padding(16.dp)
@@ -236,7 +360,7 @@ fun PopularNewTitlesSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)  // nằm trên Box
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -265,7 +389,7 @@ fun PopularNewTitlesSection(
                 Text(
                     text = "${currentIndex + 1}/10",
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 // Nút Next

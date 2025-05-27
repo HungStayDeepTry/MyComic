@@ -16,7 +16,7 @@ data class HomeMangaEntity(
     val createdAt: Long,
     val contentRating: String,
     val customType: Int,
-    val latestUploadedChapter: String
+    val latestUploadedChapter: String?
 )
 
 enum class CustomType(val value: Int){

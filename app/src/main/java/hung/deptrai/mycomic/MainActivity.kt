@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
 import hung.deptrai.mycomic.core.navigation.FeatureNavigation
+import hung.deptrai.mycomic.core.presentation.components.MainScaffold
 import hung.deptrai.mycomic.navigation.AppNavHost
 import hung.deptrai.mycomic.ui.theme.MyComicTheme
 import javax.inject.Inject
@@ -23,7 +24,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyComicTheme {
-                AppNavHost(
+                MainScaffold(
                     featureNavigation = featureNavigations
                 )
             }

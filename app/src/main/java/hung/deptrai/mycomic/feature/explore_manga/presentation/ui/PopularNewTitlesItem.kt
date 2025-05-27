@@ -1,7 +1,10 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,7 +16,16 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import hung.deptrai.mycomic.feature.explore_manga.domain.MangaHome
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.zIndex
+import hung.deptrai.mycomic.core.presentation.components.getContentRatingBackgroundColor
+import hung.deptrai.mycomic.core.presentation.components.getContentRatingTextColor
+import hung.deptrai.mycomic.core.presentation.components.getTagBackgroundColor
+import hung.deptrai.mycomic.core.presentation.components.getTagPriority
+import hung.deptrai.mycomic.core.presentation.components.getTagTextColor
 
 @Composable
 fun PopularNewTitlesItem(
@@ -26,7 +38,8 @@ fun PopularNewTitlesItem(
     Box(
         modifier = Modifier
             .width(screenWidth)
-            .height(350.dp) // Tùy bạn điều chỉnh chiều cao theo UI bạn mong muốn
+            .height(350.dp)
+
     ) {
         // Ảnh nền làm mờ
         Image(
@@ -42,7 +55,21 @@ fun PopularNewTitlesItem(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.4f))
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.4f))
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
+                .zIndex(0f)
         )
         // Nội dung foreground
         Column(
@@ -81,10 +108,11 @@ fun PopularNewTitlesItem(
                 ) {
                     Text(
                         text = manga.title ?: "No Title",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.headlineSmall,
                         maxLines = 6,
                         overflow = TextOverflow.Ellipsis,
-                        color = Color.White
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold
                     )
 
                     Text(
@@ -102,21 +130,52 @@ fun PopularNewTitlesItem(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Tags
-            LazyRow(
+            val matchedTags = manga.tags // không cần kiểm tra tagState nữa
+
+            // Sắp xếp tag theo ưu tiên và tên
+            val orderedTags = matchedTags.sortedWith(
+                compareBy({ getTagPriority(it) }, { it.name })
+            )
+
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .zIndex(2f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                items(manga.tags.size) { tag ->
-                    Card(
-                        shape = MaterialTheme.shapes.small,
-                        elevation = CardDefaults.cardElevation(2.dp)
-                    ) {
-                        Text(
-                            text = manga.tags[tag].name ?: "",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
+                // Content Rating tag trước tiên
+                manga.contentRating?.let { rating ->
+                    val bgColor = getContentRatingBackgroundColor(rating)
+                    Text(
+                        text = rating.replaceFirstChar { it.uppercase() },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = getContentRatingTextColor(rating),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(bgColor ?: MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Sau đó là các tag
+                orderedTags.take(4).forEach { tag ->
+                    val bgColor = getTagBackgroundColor(tag)
+                    Text(
+                        text = tag.name,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = getTagTextColor(bgColor),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(bgColor ?: MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

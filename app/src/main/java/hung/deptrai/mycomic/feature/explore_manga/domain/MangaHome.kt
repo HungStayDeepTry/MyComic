@@ -11,7 +11,8 @@ data class MangaHome(
     val originalLang: String?,
     val tags: List<Tag>,
     val lastUpdatedChapter: ChapterHome?,
-    val customType: Type
+    val customType: Type,
+    val contentRating: String?
 )
 
 enum class Type {
