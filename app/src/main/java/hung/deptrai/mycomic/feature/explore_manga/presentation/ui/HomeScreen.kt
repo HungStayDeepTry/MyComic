@@ -2,6 +2,7 @@ package hung.deptrai.mycomic.feature.explore_manga.presentation.ui
 
 import PopularNewTitlesItem
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -46,6 +47,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -69,12 +71,21 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     action: (HomePageAction) -> Unit,
-    homeUIState: HomeUiState
+    homeUIState: HomeUiState,
+    onScrollStateChanged: (ScrollState) -> Unit
 ) {
+    val scrollState = rememberScrollState()
+    LaunchedEffect(scrollState) {
+        snapshotFlow { scrollState.value }
+            .collect { index ->
+                onScrollStateChanged(scrollState)
+            }
+    }
     PullToRefreshScaffold(
         isRefresh = homeUIState.isRefreshing,
         onRefresh = { action(HomePageAction.PullToRefresh(true)) },
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        scrollState = scrollState,
         content = {
             val popularManga =
                 homeUIState.mangas.filter { it.customType == Type.POPULAR_NEW_TITLES }
@@ -92,7 +103,6 @@ fun HomeScreen(
                 it.customType == Type.RECENTLY_ADDED
             }
             // Header for Popular
-
             if (popularManga.isNotEmpty()) {
                 PopularNewTitlesSection(popularManga)
             }
@@ -139,6 +149,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxHeight()
                     .wrapContentWidth()
+                    .padding(start = 8.dp)
                     .horizontalScroll(rememberScrollState())
             ){
                 staffPick.take(10).forEach {
@@ -166,6 +177,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxHeight()
                     .wrapContentWidth()
+                    .padding(start = 8.dp)
                     .horizontalScroll(rememberScrollState())
             ){
                 feature.take(10).forEach {
@@ -193,6 +205,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxHeight()
                     .wrapContentWidth()
+                    .padding(start = 8.dp)
                     .horizontalScroll(rememberScrollState())
             ){
                 seasonal.take(10).forEach {
@@ -219,6 +232,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxHeight()
                     .wrapContentWidth()
+                    .padding(start = 8.dp)
                     .horizontalScroll(rememberScrollState())
             ){
                 recentlyAdded.take(10).forEach {
@@ -237,7 +251,7 @@ fun PullToRefreshScaffold(
     isRefresh: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
-    scrollState: ScrollState = rememberScrollState(),
+    scrollState: ScrollState,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
@@ -285,40 +299,10 @@ fun PopularNewTitlesSection(
     val scope = rememberCoroutineScope()
 
     var currentIndex by remember { mutableIntStateOf(0) }
-
-//    var lastIndex by remember { mutableStateOf(0) }
-//    var lastOffset by remember { mutableStateOf(0) }
-
-//    LaunchedEffect(listState) {
-//        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
-//            .collect { (index, offset) ->
-//                val totalOffset = index * screenWidthPx + offset
-//                val lastTotalOffset = lastIndex * screenWidthPx + lastOffset
-//                val delta = totalOffset - lastTotalOffset
-//
-//                lastIndex = index
-//                lastOffset = offset
-//
-//                when {
-//                    delta > screenWidthPx / 4 && currentIndex < popularManga.lastIndex -> {
-//                        currentIndex++
-//                        scope.launch { listState.animateScrollToItem(currentIndex) }
-//                    }
-//                    delta < -screenWidthPx / 4 && currentIndex > 0 -> {
-//                        currentIndex--
-//                        scope.launch { listState.animateScrollToItem(currentIndex) }
-//                    }
-//                    else -> {
-//                        scope.launch { listState.animateScrollToItem(currentIndex) }
-//                    }
-//                }
-//            }
-//    }
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(350.dp) // chiều cao fix cho ví dụ
+            .height(440.dp) // chiều cao fix cho ví dụ
     ) {
         Box(
             modifier = Modifier
@@ -332,7 +316,8 @@ fun PopularNewTitlesSection(
                 LazyRow(
                     state = listState,
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .align(Alignment.Center),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(popularManga.size) { index ->
@@ -344,13 +329,12 @@ fun PopularNewTitlesSection(
                 Text(
                     text = "Popular New Titles",
                     style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .align(Alignment.TopStart) // Đặt text nằm trên cùng, bên trái
                         .padding(16.dp)
-                        .background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(4.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp) // padding trong background
+                        .padding(vertical = 85.dp) // padding trong background
                         .zIndex(1f) // đảm bảo text hiển thị trên LazyRow
                 )
             }
@@ -415,10 +399,6 @@ fun PopularNewTitlesSection(
                 }
             }
         }
-
-//        Spacer(modifier = Modifier.height(18.dp))
-
-        // Các thành phần khác trong Column nếu có
     }
 
 }

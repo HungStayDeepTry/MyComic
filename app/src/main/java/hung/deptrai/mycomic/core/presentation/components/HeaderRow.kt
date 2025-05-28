@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -39,87 +40,95 @@ fun HeaderRow(
     onOptionClick: () -> Unit,
     onSearchClick: () -> Unit,
     onLogoClick: () -> Unit,
-    onUserPanelClick: () -> Unit
+    onUserPanelClick: () -> Unit,
+    modifier: Modifier
 ) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+    Column(
+        modifier = modifier
     ) {
+        Spacer(modifier = Modifier.background(Color.Transparent).height(32.dp))
         Row(
-            Modifier.fillMaxHeight(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = {
-
-                },
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_header_option),
-                    tint = Color.White,
-                    contentDescription = "header options",
-                )
-            }
-
-            Spacer(Modifier.width(15.dp))
-            Row {
-                Image(
-                    painter = painterResource(R.drawable.ic_test),
-                    contentDescription = "MangaDex",
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = "MangaDex",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
-        }
-
-        Row (
             Modifier
-                .fillMaxHeight()
-                .wrapContentWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            IconButton(
-                onClick = {
-
-                },
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(MaterialTheme.colorScheme.surface)
+                .fillMaxWidth()
+                .height(60.dp)
+                .padding(horizontal = 16.dp)
+                .background(Color.Transparent),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Row(
+                Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_search_24),
-                    contentDescription = "search",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
+                IconButton(
+                    onClick = {
+
+                    },
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_header_option),
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        contentDescription = "header options",
+                    )
+                }
+
+                Spacer(Modifier.width(15.dp))
+                Row {
+                    Image(
+                        painter = painterResource(R.drawable.ic_test),
+                        contentDescription = "MangaDex",
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "MangaDex",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
             }
-            Spacer(Modifier.width(5.dp))
 
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(CircleShape)
-                    .clickable {
-                        onLogoClick()
-                    }
+            Row(
+                Modifier
+                    .fillMaxHeight()
+                    .wrapContentWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(R.drawable.avatar),
-                    contentDescription = "avatar",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.matchParentSize()
-                )
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable {
+
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_search_24),
+                        contentDescription = "search",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                Spacer(Modifier.width(5.dp))
+
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            onLogoClick()
+                        }
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.avatar),
+                        contentDescription = "avatar",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.matchParentSize()
+                    )
+                }
             }
         }
     }
@@ -140,6 +149,7 @@ private fun Prev3() {
         },
         onLogoClick = {
 
-        }
+        },
+        modifier = Modifier.fillMaxWidth()
     )
 }

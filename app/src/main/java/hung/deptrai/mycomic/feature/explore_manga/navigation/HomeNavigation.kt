@@ -2,6 +2,7 @@ package hung.deptrai.mycomic.feature.explore_manga.navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -17,7 +18,7 @@ import javax.inject.Inject
 
 class HomeNavigation @Inject constructor() : FeatureNavigation {
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun register(navGraphBuilder: NavGraphBuilder, navController: NavController) {
+    override fun register(navGraphBuilder: NavGraphBuilder, navController: NavController, onScrollStateChanged: (ScrollState) -> Unit ) {
         navGraphBuilder.composable("home"){
             val viewModel = hiltViewModel<HomeViewModel>()
             val uiState by viewModel.uiState.collectAsState()
@@ -25,7 +26,10 @@ class HomeNavigation @Inject constructor() : FeatureNavigation {
                 action = {
                     viewModel.onEvent(it)
                 },
-                homeUIState = uiState
+                homeUIState = uiState,
+                onScrollStateChanged = {
+                    onScrollStateChanged(it)
+                }
             )
         }
     }

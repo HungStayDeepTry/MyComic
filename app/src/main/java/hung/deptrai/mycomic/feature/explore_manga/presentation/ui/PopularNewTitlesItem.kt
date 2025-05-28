@@ -38,7 +38,7 @@ fun PopularNewTitlesItem(
     Box(
         modifier = Modifier
             .width(screenWidth)
-            .height(350.dp)
+            .height(430.dp)
 
     ) {
         // Ảnh nền làm mờ
@@ -77,7 +77,7 @@ fun PopularNewTitlesItem(
                 .fillMaxSize()
                 .padding(12.dp)
         ) {
-            Spacer(Modifier.height(50.dp))
+            Spacer(Modifier.height(135.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -109,9 +109,9 @@ fun PopularNewTitlesItem(
                     Text(
                         text = manga.title ?: "No Title",
                         style = MaterialTheme.typography.headlineSmall,
-                        maxLines = 6,
+                        maxLines = 5,
                         overflow = TextOverflow.Ellipsis,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.ExtraBold
                     )
 

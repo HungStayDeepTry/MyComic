@@ -108,6 +108,7 @@ fun SearchScreen(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
                     .padding(horizontal = 8.dp)
+                    .padding(top = 60.dp)
                     .padding(innerPadding),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
