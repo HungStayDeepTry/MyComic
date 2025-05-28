@@ -37,7 +37,12 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import hung.deptrai.mycomic.R
 import hung.deptrai.mycomic.feature.search.domain.model.SearchComic
-import hung.deptrai.mycomic.feature.search.domain.model.TagSearch
+import hung.deptrai.mycomic.core.domain.model.Tag
+import hung.deptrai.mycomic.core.presentation.components.getContentRatingBackgroundColor
+import hung.deptrai.mycomic.core.presentation.components.getContentRatingTextColor
+import hung.deptrai.mycomic.core.presentation.components.getTagBackgroundColor
+import hung.deptrai.mycomic.core.presentation.components.getTagPriority
+import hung.deptrai.mycomic.core.presentation.components.getTagTextColor
 import hung.deptrai.mycomic.feature.search.presentation.basicSearch.ui.util.getStatusColor
 
 @SuppressLint("DefaultLocale")
@@ -270,48 +275,6 @@ fun formatNumberShort(value: Int): String {
         value >= 1_000 -> String.format("%.1fK", value / 1_000f)
         else -> value.toString()
     }
-}
-// Ưu tiên sắp xếp
-fun getTagPriority(tag: TagSearch): Int {
-    return when (tag.group.lowercase()) {
-        "content" -> 1
-        "format" -> 2
-        "genre" -> 3
-        "theme" -> 4
-        else -> 5
-    }
-}
-
-// Màu background cho tag
-fun getTagBackgroundColor(tag: TagSearch): Color? {
-    return when (tag.group.lowercase()) {
-        "content" -> Color(0xFFE57373) // đỏ
-        "format" -> if (tag.name.equals("doujinshi", ignoreCase = true)) Color(0xFFBA68C8) else null
-        else -> null
-    }
-}
-
-// Màu chữ cho tag
-@Composable
-fun getTagTextColor(background: Color?): Color {
-    return if (background != null) Color.White else MaterialTheme.colorScheme.onBackground
-}
-
-// Màu cho contentRating
-@Composable
-fun getContentRatingBackgroundColor(rating: String?): Color? {
-    return when (rating?.lowercase()) {
-        "erotica", "pornographic" -> Color(0xFFE57373)
-        "safe" -> Color(0xFF64B5F6)
-        "suggestive" -> Color(0xFFFFC107)
-        else -> null
-    }
-}
-
-@Composable
-fun getContentRatingTextColor(rating: String?): Color {
-    return if (getContentRatingBackgroundColor(rating) != null) Color.White
-    else MaterialTheme.colorScheme.onBackground
 }
 
 @Preview

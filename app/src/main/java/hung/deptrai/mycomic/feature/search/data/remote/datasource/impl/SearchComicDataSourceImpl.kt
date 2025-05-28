@@ -1,29 +1,23 @@
 package hung.deptrai.mycomic.feature.search.data.remote.datasource.impl
 
-import hung.deptrai.mycomic.core.common.safeApiCall
-import hung.deptrai.mycomic.core.data.dto.wrapper.DTOject
-import hung.deptrai.mycomic.core.data.dto.wrapper.JsonResponse
+import hung.deptrai.mycomic.core.data.common.safeApiCall
+import hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject
+import hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse
 import hung.deptrai.mycomic.core.domain.exception.DataError
 import hung.deptrai.mycomic.core.domain.wrapper.Result
-import hung.deptrai.mycomic.core.network.author.SearchAuthorAPI
+import hung.deptrai.mycomic.core.network.author.AuthorAPI
 import hung.deptrai.mycomic.core.network.coverArt.CoverArtAPI
-import hung.deptrai.mycomic.core.network.statistic.SearchStatisticsAPI
-import hung.deptrai.mycomic.core.data.dto.Attributes
-import hung.deptrai.mycomic.feature.search.data.remote.SearchComicAPI
+import hung.deptrai.mycomic.core.network.manga.MangaAPI
 import hung.deptrai.mycomic.feature.search.data.remote.datasource.SearchComicDataSource
-import hung.deptrai.mycomic.core.data.dto.author.AuthorAttributes
-import hung.deptrai.mycomic.core.data.dto.coverArt.CoverArtAttributes
-import hung.deptrai.mycomic.core.data.dto.statistic.StatisticsResponse
-import hung.deptrai.mycomic.core.data.dto.tag.TagAttributesDTO
+import hung.deptrai.mycomic.core.data.remote.dto.author.AuthorAttributes
 import javax.inject.Inject
 
 class SearchComicDataSourceImpl @Inject constructor(
-    private val api: SearchComicAPI,
-    private val api1: SearchAuthorAPI,
-    private val api2: CoverArtAPI,
-    private val api3: SearchStatisticsAPI
+    private val api: MangaAPI,
+    private val api1: AuthorAPI,
+    private val api2: CoverArtAPI
 ) : SearchComicDataSource {
-    override suspend fun getMangaByTitle(title: String): Result<JsonResponse<DTOject<Attributes>>, DataError.Network> {
+    override suspend fun getMangaByTitle(title: String): Result<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.Attributes>>, DataError.Network> {
         return safeApiCall { api.getComicByTitle(title) }
     }
 
@@ -31,14 +25,11 @@ class SearchComicDataSourceImpl @Inject constructor(
         return safeApiCall { api1.getAuthorById(authorIds) }
     }
 
-    override suspend fun getCoverArtById(coverArtIds: List<String>): Result<JsonResponse<DTOject<CoverArtAttributes>>, DataError.Network> {
+    override suspend fun getCoverArtById(coverArtIds: List<String>): Result<hung.deptrai.mycomic.core.data.remote.dto.wrapper.JsonResponse<hung.deptrai.mycomic.core.data.remote.dto.wrapper.DTOject<hung.deptrai.mycomic.core.data.remote.dto.coverArt.CoverArtAttributes>>, DataError.Network> {
         return safeApiCall { api2.getCoverArtById(coverArtIds) }
     }
 
-    override suspend fun getStatisticsByIds(mangaId: List<String>): Result<StatisticsResponse, DataError.Network> {
-        return safeApiCall { api3.getStatisticsForManga(mangaId) }
-    }
-    override suspend fun fetchAllTags(): Result<JsonResponse<DTOject<TagAttributesDTO>>, DataError.Network> {
-        return safeApiCall { api.getTags() }
-    }
+//    override suspend fun getStatisticsByIds(mangaId: List<String>): Result<hung.deptrai.mycomic.core.data.remote.dto.statistic.StatisticsResponse, DataError.Network> {
+//        return safeApiCall { api3.getStatisticsForManga(mangaId) }
+//    }
 }

@@ -43,7 +43,8 @@ android {
 }
 
 dependencies {
-
+    implementation(project(":constants"))
+    implementation(project(":core"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -52,9 +53,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
@@ -95,4 +93,8 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
+
+    //
+    implementation(libs.glide.transformations)
+    implementation(libs.gap)
 }

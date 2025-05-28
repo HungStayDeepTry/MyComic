@@ -5,7 +5,7 @@ MangaReader is a modern, modular, and scalable Android application designed to d
 
 ---
 
-## 🚀 Features (Phase 1 - MVP)
+## 🚀 Features (Phase 1 - Clean architecture)
 
 ### 🔍 Manga Discovery
 - Home: Latest updated manga (with offline caching)
